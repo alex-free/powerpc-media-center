@@ -1,0 +1,106 @@
+#!/bin/sh
+##################################################################
+#                                                                #
+#    Build System Contributions by:                              #
+#                                                                #		
+#    * Mike Brancato - Debian patches & build support            #
+#                                                                #
+##################################################################
+
+#---------------------------------------------#
+#             pseudo-configure                #
+#---------------------------------------------#
+
+if [ ! -e obj_files ] ; then
+  mkdir obj_files
+else
+  rm -rf obj_files/*
+fi
+
+OS=`uname -s | cut -d '_' -f1`
+
+if (test $OS = Darwin) || (test $OS = Linux) ; then
+
+  if (test $OS = Darwin) ; then
+    EXTRA_CPP_FLAGS="-DDARWIN_PLATFORM"
+  else
+    EXTRA_CPP_FLAGS=""
+  fi
+
+else
+  ## Windows (cygwin & mingw) fall here ##
+  EXTRA_CPP_FLAGS=""
+
+fi
+
+#---------------------------------------------#
+#                 Compiling                   #
+#---------------------------------------------#
+
+echo "Compiling AP_commons.cpp ..."
+
+g++ -g -O2 -Wall -MT obj_files/AP_commons.o -MD -MP -MF "./obj_files/AP_commons.Tpo" -c -o obj_files/AP_commons.o AP_commons.cpp
+
+echo "Compiling AtomicParsley_genres.cpp ..."
+
+g++ -g -O2 -Wall -MT obj_files/AtomicParsley_genres.o -MD -MP -MF "./obj_files/AtomicParsley_genres.Tpo" -c -o obj_files/AtomicParsley_genres.o AtomicParsley_genres.cpp
+
+echo "Compiling AP_iconv.cpp ..."
+
+g++ -g -O2 -Wall $EXTRA_CPP_FLAGS -MT AP_iconv.o -MD -MP -MF "./obj_files/AP_iconv.Tpo" -c -o obj_files/AP_iconv.o AP_iconv.cpp
+
+if test $OS = Darwin ; then
+  echo "Compiling AP_NSFile_utils.mm ..."
+
+  g++ -g -O2 -Wall -MT obj_files/AP_NSFile_utils.o -MD -MP -MF "./obj_files/AP_NSFile_utils.Tpo" -c -o obj_files/AP_NSFile_utils.o AP_NSFile_utils.mm
+
+  echo "Compiling AP_NSImage.mm ..."
+
+  g++ -g -O2 -Wall -MT obj_files/AP_NSImage.o -MD -MP -MF "./obj_files/AP_NSImage.Tpo" -c -o obj_files/AP_NSImage.o AP_NSImage.mm
+fi
+
+echo "Compiling AtomicParsley.cpp ..."
+
+g++ -g -O2 -Wall -Wno-unused $EXTRA_CPP_FLAGS -MT obj_files/AtomicParsley.o -MD -MP -MF "./obj_files/AtomicParsley.Tpo" -c -o obj_files/AtomicParsley.o AtomicParsley.cpp
+
+echo "Compiling AP_AtomExtracts.cpp ..."
+
+g++ -g -O2 -Wall $EXTRA_CPP_FLAGS -I../AtomicParsley -MT obj_files/AP_AtomExtracts.o -MD -MP -MF "./obj_files/AP_AtomExtracts.Tpo" -c -o obj_files/AP_AtomExtracts.o AP_AtomExtracts.cpp
+
+echo "Compiling APar_sha1.cpp ..."
+
+g++ -g -O2 -Wall $EXTRA_CPP_FLAGS -I../AtomicParsley -MT obj_files/APar_sha1.o -MD -MP -MF "./obj_files/APar_sha1.Tpo" -c -o obj_files/APar_sha1.o APar_sha1.cpp
+
+echo "Compiling APar_uuid.cpp ..."
+
+g++ -g -O2 -Wall $EXTRA_CPP_FLAGS -I../AtomicParsley -MT obj_files/APar_uuid.o -MD -MP -MF "./obj_files/APar_uuid.Tpo" -c -o obj_files/APar_uuid.o APar_uuid.cpp
+
+echo "Compiling main.cpp ..."
+
+g++ -g -O2 -Wall $EXTRA_CPP_FLAGS -I../AtomicParsley -MT obj_files/main.o -MD -MP -MF "./obj_files/main.Tpo" -c -o obj_files/main.o main.cpp
+
+#---------------------------------------------#
+#                  Linking                    #
+#---------------------------------------------#
+echo "Linking AtomicParsley..."
+
+if test $OS = Darwin ; then
+  g++ -g -O2 -Wall -framework Cocoa -o AtomicParsley obj_files/APar_sha1.o obj_files/APar_uuid.o obj_files/AP_commons.o obj_files/AtomicParsley_genres.o obj_files/AP_iconv.o obj_files/AP_NSFile_utils.o obj_files/AP_NSImage.o obj_files/AP_AtomExtracts.o obj_files/AtomicParsley.o obj_files/main.o
+
+elif test $OS = Linux ; then
+  g++ -O2 -Wall -o AtomicParsley obj_files/APar_sha1.o obj_files/APar_uuid.o obj_files/AP_commons.o obj_files/AtomicParsley_genres.o obj_files/AP_iconv.o obj_files/AP_AtomExtracts.o obj_files/AtomicParsley.o obj_files/main.o
+
+elif test $OS = CYGWIN ; then
+  g++ -g -O2 -Wall -o AtomicParsley.exe obj_files/APar_sha1.o obj_files/APar_uuid.o  obj_files/AP_commons.o obj_files/AtomicParsley_genres.o obj_files/AP_iconv.o obj_files/AP_AtomExtracts.o obj_files/AtomicParsley.o obj_files/main.o -lgcc 
+
+else
+  g++ -g -O2 -Wall -o AtomicParsley.exe obj_files/APar_sha1.o obj_files/APar_uuid.o obj_files/AP_commons.o obj_files/AtomicParsley_genres.o obj_files/AP_iconv.o obj_files/AP_AtomExtracts.o obj_files/AtomicParsley.o obj_files/main.o
+fi
+
+#---------------------------------------------#
+#    Stripping (enabled on Mac OS X only)     #
+#---------------------------------------------#
+
+if test $OS = Darwin ; then
+ strip AtomicParsley
+fi

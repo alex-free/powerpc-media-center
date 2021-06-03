@@ -1,0 +1,20 @@
+30,31c30,33
+< #if defined(__MACOSX__)  /* !!! FIXME: should we favor gcc atomics? */
+< #include <libkern/OSAtomic.h>
+---
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4 /* OSAtomic is not available on Mac OS X 10.3.9 */
+> 	#include <libkern/OSAtomic.h>
+> #else
+> 	#define EMULATE_CAS 1
+87c89
+< #elif defined(__MACOSX__)  /* !!! FIXME: should we favor gcc atomics? */
+---
+> #elif defined(__MACOSX__)  && !defined(EMULATE_CAS) /* Check if EMULATE_CAS is set for Mac OS X 10.3.9 compat */
+114c116
+< #elif defined(__MACOSX__) && defined(__LP64__)   /* !!! FIXME: should we favor gcc atomics? */
+---
+> #elif defined(__MACOSX__) && !defined(EMULATE_CAS) && defined(__LP64__) /* Check if EMULATE_CAS is set for Mac OS X 10.3.9 compat */
+116c118
+< #elif defined(__MACOSX__) && !defined(__LP64__)  /* !!! FIXME: should we favor gcc atomics? */
+---
+> #elif defined(__MACOSX__) && !defined(__LP64__) && !defined(EMULATE_CAS) /* Check if EMULATE_CAS is set for Mac OS X 10.3.9 compat */

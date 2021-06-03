@@ -1,0 +1,24 @@
+help.browser::
+	Specify the browser that will be used to display help in the
+	'web' format. See linkgit:git-help[1].
+
+help.format::
+	Override the default help format used by linkgit:git-help[1].
+	Values 'man', 'info', 'web' and 'html' are supported. 'man' is
+	the default. 'web' and 'html' are the same.
+
+help.autoCorrect::
+	If git detects typos and can identify exactly one valid command similar
+	to the error, git will automatically run the intended command after
+	waiting a duration of time defined by this configuration value in
+	deciseconds (0.1 sec).  If this value is 0, the suggested corrections
+	will be shown, but not executed. If it is a negative integer, or
+	"immediate", the suggested command
+	is run immediately. If "never", suggestions are not shown at all. The
+	default value is zero.
+
+help.htmlPath::
+	Specify the path where the HTML documentation resides. File system paths
+	and URLs are supported. HTML pages will be prefixed with this path when
+	help is displayed in the 'web' format. This defaults to the documentation
+	path of your Git installation.

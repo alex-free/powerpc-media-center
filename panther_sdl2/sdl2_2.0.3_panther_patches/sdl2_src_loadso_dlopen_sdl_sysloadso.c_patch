@@ -1,0 +1,12 @@
+36c36,44
+<     void *handle = dlopen(sofile, RTLD_NOW|RTLD_LOCAL);
+---
+> #if defined(__MACOSX__)
+> #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4 /* The Mac OS X 10.3.9 dlcompat does not accept RTLD_LOCAL */
+>     void *handle = dlopen(sofile, RTLD_NOW|RTLD_GLOBAL); 
+> #else
+>     void *handle = dlopen(sofile, RTLD_NOW|RTLD_LOCAL);
+> #endif
+> #else
+>     void *handle = dlopen(sofile, RTLD_NOW|RTLD_LOCAL);
+> #endif

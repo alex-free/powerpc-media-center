@@ -1,0 +1,46 @@
+#!/bin/bash
+delete=no
+track_count=0
+set -e
+
+if [ ! -d "$1" ]; then
+	echo "Error, cannot find the specified folder: $1"
+else
+	cd "$1"
+fi
+
+if [ $# -eq 4 ]; then
+	delete=yes
+	rm -rf "$4"
+	mkdir "$4"
+	cp -rv *."$3" "$4"
+	cd "$4"
+	for f in *."$3"; do
+		wav_name=$(echo "$f" | cut -d'.' -f1)
+		/Applications/PPCMC.app/bin/ffmpeg -i "$f" "${wav_name}.wav"
+	done
+fi
+
+shopt -s nullglob
+
+wav_count=$(ls -l *.wav *.WAV >/dev/null 2>&1  | wc -l)
+
+if [ "$wav_count" != 0 ]; then
+	for f in *.wav *.WAV ; do 
+		((track_count=track_count+1))
+		if [ "$track_count" -lt 10 ]; then
+			printf "FILE %s WAVE\nTRACK 0%s AUDIO\n\n" \""${f}"\" "$track_count" >> "$2"
+		else
+			printf "FILE %s WAVE\nTRACK %s AUDIO\n\n" \""${f}"\" "$track_count" >> "$2"
+		fi
+	done
+else
+	echo "Error: No .wav or .WAV files could be found to burn to the Audio CD!"
+	exit 1
+fi
+
+shopt -u nullglob
+
+if [ "$delete" == "yes" ]; then
+	rm -rf *."$3"
+fi

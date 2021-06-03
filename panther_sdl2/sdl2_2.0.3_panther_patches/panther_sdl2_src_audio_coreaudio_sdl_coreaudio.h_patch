@@ -1,0 +1,21 @@
+28c28
+< #if !defined(__IPHONEOS__)
+---
+> #if !defined(__IPHONEOS__) &&  MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_3 /* CoreAudio implementation as is can not be used on 10.3.9 */
+29a30,31
+> #elif !defined(__IPHONEOS__) &&  MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
+> #define MACOSX_PANTHER_COREAUDIO 1
+32c34,35
+< #if MACOSX_COREAUDIO
+---
+> 
+> #if defined(MACOSX_COREAUDIO) || defined(MACOSX_PANTHER_COREAUDIO)
+33a37,39
+> #if defined(__ALTIVEC__) && !defined(MAC_OS_X_VERSION_10_5)
+> /* to cricumvent a bug in Mac OS X 10.4 SDK */
+> #define vector __vector
+34a41,44
+> #undef vector
+> #else
+> #include <CoreServices/CoreServices.h>
+> #endif

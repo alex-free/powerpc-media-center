@@ -1,0 +1,22 @@
+#!/bin/bash
+#youtube ffplay wrapper for PowerPC Media Center 7 by Alex Free, Google incorrectly labels yuva420p as yuv420p?
+
+yuvt=$(/Applications/PPCMC.app/bin/ffprobe "${@}" 2>&1)
+pref=$(cat /Applications/PPCMC.app/pref)
+
+if echo ${yuvt} | egrep 'yuv420p'; then
+	if echo ${pref} | egrep 'yuva420p'; then
+	$pref "${1}"
+	else
+	echo "WARNING: custom configuration does not contain -vf scale=in_color_matrix=yuva420p,format=rgb32 and can not be used to play back the file: "${1}" . Using internal yuva420p config."
+	/Applications/PPCMC.app/bin/ffplay -vf scale=in_color_matrix=yuva420p,format=rgb32 "${@}" 
+	fi
+else
+
+	if echo ${pref} | egrep 'yuva420p'; then
+	echo "WARNING: configuration contains -vf scale=in_color_matrix=yuva420p,format=rgb32 and can not be used to play back the file: "${1}" . Using no config."
+	/Applications/PPCMC.app/bin/ffplay "${@}"
+	else
+	$pref "${1}"
+	fi
+fi

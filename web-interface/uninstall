@@ -1,0 +1,14 @@
+#!/bin/sh
+app=/Applications/PPCMC.app
+cd $app/web-interface
+echo "Web Interface Version 0.5 Uninstaller"
+rm -rf /Library/WebServer/Documents/ppcmcw
+if [ -f "/etc/httpd/httpd.conf" ]; then
+ patch /etc/httpd/httpd.conf remove_php_4_patch > /dev/null 2>&1
+fi
+if [ -f "/etc/apache2/httpd.conf" ]; then
+ patch /etc/apache2/httpd.conf remove_php_5_patch > /dev/null 2>&1
+fi
+ apachectl stop > /dev/null 2>&1
+ apachectl start > /dev/null 2>&1
+echo "Complete"

@@ -1,0 +1,28 @@
+129a130
+>     #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+148a150
+>     #endif
+186a189
+>     #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+189a193
+>     #endif
+194a199
+>     #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+197a203
+>     #endif
+259a266
+>             #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+262a270
+>             #endif
+321a330
+>     #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+324a334
+>     #endif
+339a350
+>     #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+342a354
+>     #endif
+353a366
+>     #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+356a370
+>     #endif

@@ -1,0 +1,336 @@
+#!/bin/bash
+
+version=7.2.5
+
+app=/Applications/PPCMC.app
+export PATH=$app/bin:/usr/local/bin:$PATH
+
+#delete/change 'enabled' to skip
+delete_app=enabled
+build_env=no
+
+panther_build=enabled
+tiger_build=enabled
+
+zlib_f=enabled
+lame_f=enabled
+ssl_f=enabled
+python_f=enabled
+ffmpeg_f_ppcg=enabled
+ffmpeg_f_ppc750=enabled
+ffmpeg_f_ppc7400=enabled
+ffmpeg_f_ppc7450=enabled
+curl_f=enabled
+ap_f=enabled
+panther_sdl2_f=enabled
+cdr_f=enabled
+pkgc_f=enabled
+git_f=enabled
+
+#software
+git=git-2.31.1
+pkgc=pkg-config-0.29.2
+cert=cacert-2021-04-13.pem
+perl=perl-5.30.1
+make=make-4.3
+zlib=zlib-1.2.11
+lame=lamevmx-master
+ssl=openssl-1.1.1k
+python=python-3.6.13
+ffmpeg=ffmpeg-4.4
+curl=curl-7.76.1
+ap=atomicparsley-source-0.9.0
+panther_sdl2=panther_sdl2
+cdr=cdrdao-1.2.0
+
+update_app_only () {
+
+if [ ! -d PPCMC.app ]; then
+	echo "Could not find PPCMC.app. To compile all of these dependencies you need to first compile the PPCMC-Script to an Apple Script Application bundle. To do so, open the PPCMC-Script file in the Apple Script Editor and save it as an Application bundle in this directory as PPCMC.app. After doing so, run sudo ./build again."
+	exit 1
+fi	
+
+if [ -e $app ]; then
+	cp -r PPCMC.app /Applications/
+	cp -r youtube-dl ffplay-yt mkcd cd-services $app/bin/
+	cp applet.icns $app/Contents/Resources/
+	chmod -R 777 $app
+	echo "Updated $app"
+fi
+
+if [ -e build/ppcmc_"$version"_panther/PPCMC.app ]; then
+	cp -r PPCMC.app build/ppcmc_"$version"_panther/
+        cp -r youtube-dl ffplay-yt mkcd cd-services build/ppcmc_"$version"_panther/PPCMC.app/bin 
+	cp applet.icns build/ppcmc_"$version"_panther/PPCMC.app/Contents/Resources/
+	cp User\ Guide.html build/ppcmc_"$version"_panther/
+	cp -r licenses build/ppcmc_"$version"_panther/
+	chmod -R 777 build/ppcmc_"$version"_panther/
+	echo "Updated Panther Build"
+fi
+
+if [ -e build/ppcmc_"$version"_tiger/PPCMC.app ]; then
+	cp -r PPCMC.app build/ppcmc_"$version"_tiger/
+        cp -r youtube-dl ffplay-yt mkcd cd-services build/ppcmc_"$version"_tiger/PPCMC.app/bin
+	cp applet.icns build/ppcmc_"$version"_tiger/PPCMC.app/Contents/Resources/
+	cp User\ Guide.html build/ppcmc_"$version"_tiger/
+	cp -r licenses build/ppcmc_"$version"_tiger/
+	chmod -R 777 build/ppcmc_"$version"_tiger
+	echo "Updated Tiger Build"
+
+fi
+
+chmod -R 777 build
+}
+
+compile_deps () {
+
+if [ $delete_app == "enabled" ]; then
+	rm -rf $app
+fi
+if [ ! -d PPCMC.app/Contents/Resources ]; then
+	echo "Could not find PPCMC.app. To compile all of these dependencies you need to first compile the PPCMC.scpt file to an Apple Script Application Bundle with the startup screen option disabled. To do so, open the PPCMC-Script file in the Apple Script Editor and save it as an Application bundle in this directory as PPCMC.app. After doing so, run sudo ./build again."
+	exit 1
+else
+	echo "Found PPCMC.app."
+	cp -r PPCMC.app /Applications
+fi
+
+if [ "$1" = "panther" ]; then
+	export MACOSX_DEPLOYMENT_TARGET=10.3
+elif [ "$1" = "tiger" ]; then
+	export MACOSX_DEPLOYMENT_TARGET=10.4
+fi
+	
+cp applet.icns $app/Contents/Resources/applet.icns
+mkdir -p $app/certs
+mkdir -p $app/bin
+cp $cert $app/certs/cacert.pem
+cp -r youtube-dl ffplay-yt mkcd cd-services $app/bin/
+cp -r  web-interface $app/
+cp ffplay-yt $app/bin/
+
+if [ $pkgc_f == "enabled" ]; then
+    rm -rf build/$pkgc
+    cp -Rp $pkgc build/
+    cd build/$pkgc
+    ./configure --with-internal-glib --prefix=$app PKG_CONFIG_PATH=$app PKG_CONFIG_LIBDIR=$app/lib 
+    make
+    make install
+    cd ../../
+    rm -rf build/$pkgc
+fi
+
+if [ $zlib_f == "enabled" ]; then
+	rm -rf build/$zlib
+	cp -Rpv $zlib build/
+	cd build/$zlib
+	./configure --prefix=$app -eprefix=$app
+	make install
+	cd ../../
+	rm -rf build/$zlib
+fi
+
+if [ $lame_f == "enabled" ]; then
+        rm -rf build/$lame
+        cp -Rp $lame build/
+        cd build/$lame
+#LAMEVMX specifies SDK/arches, this patch removes that so build select can be used instead
+	if [ "$1" == "panther" ]; then
+        	patch ./configure ../../lamevmx_panther_patch
+        elif "$1" == "tiger" ]; then
+		patch ./configure ../../lamevmx_tiger_patch
+	fi	
+	./configure --prefix=$app --exec-prefix=$app
+	make install
+        cd ../../
+        rm -rf build/$lame
+fi
+
+if [ $cdr_f == "enabled" ]; then
+	rm -rf build/$cdr
+	cp -Rp $cdr build/
+	cd build/$cdr
+	./configure --prefix=$app --with-lame-include=$app/include --with-lame-lib=$app/lib
+	make
+	make install
+	cd ../../
+	rm -rf build/$cdr
+fi
+
+if [ $panther_sdl2_f == "enabled" ]; then
+	rm -rf build/$panther_sdl2
+	cp -Rp $panther_sdl2 build/
+	cd build/$panther_sdl2
+	./configure --without-x --disable-joystick --disable-haptic --prefix=$app
+	make install
+	cd ../../
+	rm -rf build/$panther_sdl2
+fi
+
+if [ $ssl_f == "enabled" ]; then
+	rm -rf build/$ssl
+	cp -Rp $ssl build/
+	cd build/$ssl
+	./Configure no-threads enable-shared zlib no-async --openssldir=$app --prefix=$app darwin-ppc-cc -I/Applications/PPCMC.app/include -L/Applications/PPCMC.app/lib
+	make
+	make install
+	cd ../../
+	rm -rf build/$ssl
+fi
+
+if [ $python_f == "enabled" ]; then
+	rm -rf build/$python
+	cp -Rp $python build/
+	cd build/$python
+	patch modules/setup.dist ../../python36_ssl_patch
+	./configure --prefix=$app --exec-prefix=$app CFLAGS="-I/Applications/PPCMC.app/include" LDFLAGS="-L/Applications/PPCMC.app/lib"
+	make
+	make install
+	cd ../../
+	rm -rf build/$python
+fi
+
+if [ "$curl_f" == "enabled" ]; then
+	cp -Rp $curl build/
+	cd build/$curl
+	./configure --prefix=$app --exec-prefix=$app --with-ssl=$app --with-ca-bundle=$app/certs/cacert.pem CFLAGS="-I/Applications/PPCMC.app/include" LDFLAGS="-L/Applications/PPCMC.app/lib"
+	make install
+	cd ../../
+	rm -rf build/$curl
+fi
+
+if [ "$git_f" == "enabled" ]; then
+    cp -Rp $git build/
+    cd build/$git
+    patch sha1dc/sha1.c ../../git_gcc_4_0_big_endian_patch
+    ./configure --prefix=$app CFLAGS="-I/Applications/PPCMC.app/include" LDFLAGS="-L/Applications/PPCMC.app/lib" 
+    make
+    make strip
+    make install
+    cd ../../
+    rm -rf build/$git
+fi
+
+if [ $ap_f == "enabled" ]; then
+	rm -rf build/$ap
+	cp -Rp $ap build/
+	cd build/$ap
+	./build
+	cp AtomicParsley $app/bin/
+	cd ../../
+	rm -rf build/$ap
+fi
+
+rm -rf /tmp/ppcmc_build_ppc*
+
+if [ $ffmpeg_f_ppcg == "enabled" ]; then
+	cp -Rp $ffmpeg build/
+	cd build/$ffmpeg
+	./configure --prefix=$app --disable-altivec --enable-libmp3lame --enable-zlib --disable-iconv --enable-openssl --enable-static --enable-sdl --enable-outdev=sdl2 --disable-htmlpages --disable-bzlib --extra-ldflags="-L/Applications/PPCMC.app/lib" --extra-cflags="-I/Applications/PPCMC.app/include"
+	rm -rf /tmp/ppcmc_build_ppcg
+	make install DESTDIR=/tmp/ppcmc_build_ppcg
+	cd ../../
+	rm -rf build/$ffmpeg
+fi
+
+if [ $ffmpeg_f_ppc750 == "enabled" ]; then
+	cp -Rp $ffmpeg build/
+	cd build/$ffmpeg
+	./configure --prefix=$app --disable-altivec --enable-libmp3lame --enable-zlib --disable-iconv --enable-openssl --enable-static --enable-sdl --enable-outdev=sdl2 --disable-htmlpages --disable-bzlib --extra-ldflags="-L/Applications/PPCMC.app/lib" --extra-cflags="-I/Applications/PPCMC.app/include -arch ppc750"
+	rm -rf /tmp/ppcmc_build_ppc750
+	make install DESTDIR=/tmp/ppcmc_build_ppc750
+	cd ../../
+	rm -rf build/$ffmpeg
+fi
+
+if [ $ffmpeg_f_ppc7400 == "enabled" ]; then
+	cp -Rp $ffmpeg build/
+	cd build/$ffmpeg
+	./configure --prefix=$app --enable-altivec --enable-libmp3lame --enable-zlib --disable-iconv --enable-openssl --enable-static --enable-sdl --enable-outdev=sdl2 --disable-htmlpages --disable-bzlib --extra-ldflags="-L/Applications/PPCMC.app/lib" --extra-cflags="-I/Applications/PPCMC.app/include -arch ppc7400"
+	rm -rf /tmp/ppcmc_build_ppc7400
+	make install DESTDIR=/tmp/ppcmc_build_ppc7400
+	cd ../../
+	rm -rf build/$ffmpeg
+fi
+
+if [ $ffmpeg_f_ppc7450 == "enabled" ]; then
+	cp -Rp $ffmpeg build/
+	cd build/$ffmpeg
+	./configure --prefix=$app --enable-altivec --enable-libmp3lame --enable-zlib --disable-iconv --enable-openssl --enable-static --enable-sdl --enable-outdev=sdl2 --disable-htmlpages --disable-bzlib --extra-ldflags="-L/Applications/PPCMC.app/lib" --extra-cflags="-I/Applications/PPCMC.app/include -arch ppc7450"
+	rm -rf /tmp/ppcmc_build_ppc7450
+	make install DESTDIR=/tmp/ppcmc_build_ppc7450
+	cd ../../
+	rm -rf build/$ffmpeg
+fi
+
+if [ $ffmpeg_f_ppcg == "enabled" ] && [ $ffmpeg_f_ppc750 == "enabled" ] && [ $ffmpeg_f_ppc7400 == "enabled" ] && [ $ffmpeg_f_ppc7450 == "enabled" ]; then
+	lipo -create /tmp/ppcmc_build_ppc7450$app/bin/ffmpeg /tmp/ppcmc_build_ppc7400$app/bin/ffmpeg /tmp/ppcmc_build_ppc750$app/bin/ffmpeg /tmp/ppcmc_build_ppcg$app/bin/ffmpeg -o $app/bin/ffmpeg
+	lipo -create /tmp/ppcmc_build_ppc7450$app/bin/ffprobe /tmp/ppcmc_build_ppc7400$app/bin/ffprobe /tmp/ppcmc_build_ppc750$app/bin/ffprobe /tmp/ppcmc_build_ppcg$app/bin/ffprobe -o $app/bin/ffprobe
+	lipo -create /tmp/ppcmc_build_ppc7450$app/bin/ffplay /tmp/ppcmc_build_ppc7400$app/bin/ffplay /tmp/ppcmc_build_ppc750$app/bin/ffplay /tmp/ppcmc_build_ppcg$app/bin/ffplay -o $app/bin/ffplay
+	rm -rf /tmp/ppcmc_build_ppc*
+fi
+
+rm -rf build/ppcmc_"$version"_"$1"
+mkdir build/ppcmc_"$version"_"$1"
+cp -Rv $app licenses User\ Guide.html build/ppcmc_"$version"_"$1"/
+chmod -R 777 build/ppcmc_"$version"_"$1"
+}
+
+set -e
+echo "*******PowerPC Media Center "$version" Build System*******"
+if [[ $EUID -ne 0 ]]; then
+	echo "Run build with sudo or as root"
+	exit 1
+fi
+cd "$(dirname "$0")"
+
+if [ "$1" = "--justapp" ]; then
+	update_app_only
+	exit 0
+elif [ "$1" = "--all" ]; then
+
+if [ ! -d /Developer/SDKs/MacOSX10.4u.sdk ]; then
+	echo "Could not find the Mac OS X 10.4u SDK at /Developer/SDKs/MacOSX10.4u.sdk."
+	exit 1
+fi
+
+if [ ! -d /Developer/SDKs/MacOSX10.3.9.sdk ]; then
+        echo "Could not find the Mac OS X 10.3.9 SDK at /Developer/SDKs/MacOSX10.3.9.sdk."
+        exit 1
+fi
+
+if [ $panther_build == "enabled" ] && [ $tiger_build == "enabled" ]; then
+	rm -rf build
+	mkdir build
+fi
+
+if [ $build_env == "enabled" ]; then
+	rm -rf build/$perl
+	cp -Rp $perl build/
+	cd build/$perl
+	sh Configure -de -Dprefix='/usr/local'
+	make install
+	cd ../../
+	rm -rf build/$perl
+	rm -rf build/$make
+	cp -Rp $make build/
+	cd build/$make
+	./configure
+	make install
+	cd ../../
+	rm -rf build/$make
+fi
+
+if [ $panther_build == "enabled" ]; then
+	compile_deps panther
+fi 
+if [ $tiger_build == "enabled" ]; then
+	compile_deps tiger
+fi
+
+echo "Build Finished"
+date
+
+else
+	echo "First arg must be --all or --justapp!"
+fi

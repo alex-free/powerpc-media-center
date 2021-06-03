@@ -1,0 +1,66 @@
+25a26
+> #if 0
+26a28
+> #endif
+102a105
+> #if defined(MAC_OS_X_VERSION_10_5)
+103a107,112
+> #else
+>         /* old way to iterate */
+>         int i;
+>         for (i = 0; i < [contexts count]; i++) {
+>             SDLOpenGLContext *context = [contexts objectAtIndex:i];
+> #endif
+192a202
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+196a207
+> #endif
+214a226
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+217a230
+> #endif
+284a298
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+285a300
+> #endif
+321a337
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+325a342
+> #endif
+349,350c366,373
+<     for (NSWindow *win in windows)
+<     {
+---
+> #if defined(MAC_OS_X_VERSION_10_5)
+>     for (NSWindow *win in windows) {
+> #else
+>     /* old way to iterate */
+>     int i;
+>     for (i = 0; i < [windows count]; i++) {
+>         NSWindow *win = [windows objectAtIndex:i];
+> #endif
+599a623
+> #if MAC_OS_X_VERSION_MIN_REQUIRED > 1070
+605a630
+> #endif
+622a648
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+630a657
+> #endif
+824a852
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+877a906
+> #endif
+1042a1072
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+1049a1080
+> #endif
+1492a1524
+> #if defined(MAC_OS_X_VERSION_10_5)
+1493a1526,1531
+> #else
+>         /* old way to iterate */
+>         int i;
+>         for (i = 0; i < [contexts count]; i++) {
+>             SDLOpenGLContext *context = [contexts objectAtIndex:i];
+> #endif

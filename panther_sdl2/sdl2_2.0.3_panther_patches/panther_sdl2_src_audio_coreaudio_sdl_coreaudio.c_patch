@@ -1,0 +1,35 @@
+343c343,344
+<             #if MACOSX_COREAUDIO
+---
+>             #if defined(MACOSX_COREAUDIO) || defined(MACOSX_PANTHER_COREAUDIO)
+> 
+364c365,366
+< #if MACOSX_COREAUDIO
+---
+> #if defined(MACOSX_COREAUDIO) || defined(MACOSX_PANTHER_COREAUDIO)
+> 
+368,369c370,371
+<     AudioComponentDescription desc;
+<     AudioComponent comp = NULL;
+---
+>    AudioComponentDescription desc;
+>    AudioComponent comp = NULL;
+388c390,391
+< #if MACOSX_COREAUDIO
+---
+> #if defined(MACOSX_COREAUDIO) || defined(MACOSX_PANTHER_COREAUDIO)
+> 
+392,393c395,396
+<     desc.componentSubType = kAudioUnitSubType_RemoteIO;
+<     comp = AudioComponentFindNext(NULL, &desc);
+---
+>    desc.componentSubType = kAudioUnitSubType_RemoteIO;
+>    comp = AudioComponentFindNext(NULL, &desc);
+402c405
+< #if MACOSX_COREAUDIO
+---
+> #if defined(MACOSX_COREAUDIO) || defined(MACOSX_PANTHER_COREAUDIO)
+544a548
+> #if !defined(MACOSX_PANTHER_COREAUDIO)
+548a553
+> #endif

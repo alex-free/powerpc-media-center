@@ -1,0 +1,8 @@
+73c73
+< #if TARGET_OS_IPHONE
+---
+> #if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE
+82a83
+> #if 0
+83a85
+> #endif

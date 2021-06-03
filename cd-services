@@ -1,0 +1,9 @@
+#!/bin/bash
+# Quick one liner by Alex Free to detect the right burning service, in it's own script because applescript hates this command
+
+if ioreg -l | grep "IOCompactDiscServices"; then
+	echo IOCompactDiscServices > /Applications/PPCMC.app/cdpref 
+fi
+if ioreg -l | grep "IODVDServices"; then
+	 echo IODVDServices > /Applications/PPCMC.app/cdpref
+fi

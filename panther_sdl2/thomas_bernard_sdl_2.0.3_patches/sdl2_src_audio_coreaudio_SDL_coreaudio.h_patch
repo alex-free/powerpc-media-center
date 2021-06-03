@@ -1,0 +1,9 @@
+33a34,36
+> #if defined(__ALTIVEC__) && !defined(MAC_OS_X_VERSION_10_5)
+> /* to cricumvent a bug in Mac OS X 10.4 SDK */
+> #define vector __vector
+34a38,41
+> #undef vector
+> #else
+> #include <CoreServices/CoreServices.h>
+> #endif

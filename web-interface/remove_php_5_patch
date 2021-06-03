@@ -1,0 +1,4 @@
+115c115
+< LoadModule php5_module        libexec/apache2/libphp5.so
+---
+> #LoadModule php5_module        libexec/apache2/libphp5.so

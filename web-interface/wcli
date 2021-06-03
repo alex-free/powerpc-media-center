@@ -1,0 +1,38 @@
+#!/bin/bash
+export PATH=/Applications/PPCMC.app/bin:$PATH
+export SSL_CERT_FILE=/Applications/PPCMC.app/certs/cacert.pem
+export REQUESTS_CA_BUNDLE=/Applications/PPCMC.app/certs/cacert.pem
+
+rm -rf /Library/WebServer/Documents/ppcmcw/tmp/*
+rm -rf /Library/WebServer/Documents/ppcmcw/tmp2/*
+
+if [ "$1" = "conv_240_mpeg" ]; then
+python2.7 /Applications/PPCMC.app/bin/youtube-dl --prefer-ffmpeg --ffmpeg-location=/Applications/PPCMC.app/bin/ffmpeg -f 133+140 -o /Library/WebServer/Documents/ppcmcw/tmp/"%(title)s.%(ext)s" $2
+basefile=$(ls -1 /Library/WebServer/Documents/ppcmcw/tmp/ | sed -e 's/\.mp4$//')
+ffmpeg -i "/Library/WebServer/Documents/ppcmcw/tmp/$basefile.mp4" -qscale 0 "/Library/WebServer/Documents/ppcmcw/tmp/$basefile.mpeg" 2>&1
+elif [ "$1" = "conv_144_mp4" ]; then
+python2.7 /Applications/PPCMC.app/bin/youtube-dl --prefer-ffmpeg --ffmpeg-location=/Applications/PPCMC.app/bin/ffmpeg -f 160+140 -o /Library/WebServer/Documents/ppcmcw/tmp2/"%(title)s.%(ext)s" $2
+basefile=$(ls -1 /Library/WebServer/Documents/ppcmcw/tmp2/ | sed -e 's/\.mp4$//')  
+/Applications/PPCMC.app/bin/ffmpeg -i "/Library/WebServer/Documents/ppcmcw/tmp2/$basefile.mp4" -qscale 0 -vcodec mpeg4 "/Library/WebServer/Documents/ppcmcw/tmp/$basefile.mp4" 2>&1
+elif [ "$1" = "conv_240_mp4" ]; then
+python2.7 /Applications/PPCMC.app/bin/youtube-dl --prefer-ffmpeg --ffmpeg-location=/Applications/PPCMC.app/bin/ffmpeg -f 133+140 -o /Library/WebServer/Documents/ppcmcw/tmp2/"%(title)s.%(ext)s" $2
+basefile=$(ls -1 /Library/WebServer/Documents/ppcmcw/tmp2/ | sed -e 's/\.mp4$//')  
+/Applications/PPCMC.app/bin/ffmpeg -i "/Library/WebServer/Documents/ppcmcw/tmp2/$basefile.mp4" -qscale 0 -vcodec mpeg4 "/Library/WebServer/Documents/ppcmcw/tmp/$basefile.mp4" 2>&1
+elif [ "$1" = "conv_360_mp4" ]; then
+python2.7 /Applications/PPCMC.app/bin/youtube-dl --prefer-ffmpeg --ffmpeg-location=/Applications/PPCMC.app/bin/ffmpeg -f 134+140 -o /Library/WebServer/Documents/ppcmcw/tmp2/"%(title)s.%(ext)s" $2
+basefile=$(ls -1 /Library/WebServer/Documents/ppcmcw/tmp2/ | sed -e 's/\.mp4$//')  
+/Applications/PPCMC.app/bin/ffmpeg -i "/Library/WebServer/Documents/ppcmcw/tmp2/$basefile.mp4" -qscale 0 -vcodec mpeg4 "/Library/WebServer/Documents/ppcmcw/tmp/$basefile.mp4" 2>&1
+elif [ "$1" = "conv_480_mp4" ]; then
+python2.7 /Applications/PPCMC.app/bin/youtube-dl --prefer-ffmpeg --ffmpeg-location=/Applications/PPCMC.app/bin/ffmpeg -f 133+140 -o /Library/WebServer/Documents/ppcmcw/tmp2/"%(title)s.%(ext)s" $2
+basefile=$(ls -1 /Library/WebServer/Documents/ppcmcw/tmp2/ | sed -e 's/\.mp4$//')  
+/Applications/PPCMC.app/bin/ffmpeg -i "/Library/WebServer/Documents/ppcmcw/tmp2/$basefile.mp4" -qscale 0 -vcodec mpeg4 "/Library/WebServer/Documents/ppcmcw/tmp/$basefile.mp4" 2>&1
+elif [ "$1" = "conv_mp3" ]; then
+python2.7 /Applications/PPCMC.app/bin/youtube-dl --prefer-ffmpeg --ffmpeg-location=/Applications/PPCMC.app/bin/ffmpeg -f 140 -o /Library/WebServer/Documents/ppcmcw/tmp2/"%(title)s.%(ext)s" $2
+basefile=$(ls -1 /Library/WebServer/Documents/ppcmcw/tmp2/ | sed -e 's/\.m4a$//')  
+/Applications/PPCMC.app/bin/ffmpeg -i "/Library/WebServer/Documents/ppcmcw/tmp2/$basefile.m4a" -f mp3 -ar 44100 -ab 320000 -vn -y "/Library/WebServer/Documents/ppcmcw/tmp/$basefile.mp3" 2>&1
+fi
+ 
+cp /Library/WebServer/Documents/ppcmcw/tmp/* /Library/WebServer/Documents/ppcmcw/dl/
+
+rm -rf /Library/WebServer/Documents/ppcmcw/tmp/*
+rm -rf /Library/WebServer/Documents/ppcmcw/tmp2/*

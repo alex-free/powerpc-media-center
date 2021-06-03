@@ -1,0 +1,8 @@
+240c240
+< LoadModule php4_module        libexec/httpd/libphp4.so
+---
+> #LoadModule php4_module        libexec/httpd/libphp4.so
+284c284
+< AddModule mod_php4.c
+---
+> #AddModule mod_php4.c

@@ -1,0 +1,4 @@
+17608c17608
+< OPTIMIZATION="-arch ppc750 -arch ppc7400 -arch ppc970 -O3 -fomit-frame-pointer -ffast-math -funroll-loops -isysroot /Developer/SDKs/MacOSX10.4u.sdk"
+---
+> OPTIMIZATION="-arch ppc -arch ppc750 -arch ppc7400 -arch ppc970 -O3 -fomit-frame-pointer -ffast-math -funroll-loops -isysroot /Developer/SDKs/MacOSX10.3.9.sdk"

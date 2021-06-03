@@ -1,0 +1,5 @@
+27a28,31
+> #if !defined(MAC_OS_X_VERSION_10_5)
+> typedef float CGFloat;
+> #endif
+> 

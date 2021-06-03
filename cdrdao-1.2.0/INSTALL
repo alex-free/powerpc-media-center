@@ -1,0 +1,78 @@
+Installation:
+
+
+The GnomeCDMaster GUI additionally requires the Gimp toolkit gtk+-2.4
+recent Gnome libraries and the C++ bindings gtkmm-2.4 and gnomemm-2.4.
+The packages are available from www.gtk.org, www.gnome.org and
+gtkmm.sourceforge.net.
+
+If you fetched the source tree directly from CVS, you will first have
+to run the autogen.sh script to unpack the scsilib and pccts libraries
+and generate all the Makefiles.
+
+
+1. Type './configure'.
+   Configure options for mp3lame library (only required for building toc2mp3):
+     --without-lame          Disable building of toc2mp3.
+     --with-lame-include     Specifies the directory containing the lame
+                             include directory.
+     --with-lame-lib         Specifies the directory containing mp3lame
+                             library.
+     --disable-lame-test     Do not run a test program that checks for the
+                             required mp3lame library version. It will be
+                             assumed that the correct mp3lame library is
+                             available.
+
+   Configure options for PCCTS (only required if you do not want to use
+   the PCCTS version which is included in this cdrdao source distribution):
+     --with-pcctsbin=dir     Specifies directory that contains the PCCTS 
+                             executables (default: pccts/bin)
+
+     --with-pcctsinc=dir     Specifies directory that contains the PCCTS
+                             header and source files
+                             (default: pccts/h)
+
+   Configure options for SCSI interface:
+     --without-scglib        Use a direct SCSI implementation instead of
+                             Joerg Schilling's SCSI library. This makes only
+                             sense if the SCSI library does not compile for
+                             some reason. Direct SCSI implementations are
+                             currently available for Linux and FreeBSD.
+
+     The included SCSI library will be built if the following options
+     are not given.
+     
+     --with-scglib-inc=dir   Use SCSI library include files from specified
+                             directory instead from the SCSI library that
+                             comes with the cdrdao package. This option will
+                             only have an effect if '--with-scglib-lib' is
+                             specified, too. If both options are given the
+                             SCSI library will not be built.
+
+     --with-scglib-lib=dir   Specifies the directory that contains the SCSI
+                             library. This option will only have an effect if
+                             '--with-scglib-inc' is specified, too. If both
+                             options are given the SCSI library will not be
+                             built.
+
+   Misc configure options:
+     --with-linux-qnx-sched  Enables Linux QNX real time scheduling.
+                             This will only work if your kernel is compiled
+                             with the QNX scheduler.
+
+     --without-posix-threads Do not use posix threads for ring buffer even
+                             if the system supports it.
+
+2. Type 'make' to compile the package.
+
+3. Type 'make install' as root to install the executable and the manual page
+   under '/usr/local' or whatever was specified as the installation prefix.
+
+
+Examples :
+
+To compile against an already installed cdrecord-devel library, you
+could use the following :
+
+  configure --with-scglib-inc=/usr/include/schily --with-scglib-lib=/usr/lib
+

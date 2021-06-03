@@ -1,0 +1,13 @@
+27a28,33
+> #if defined(__ALTIVEC__) && !defined(MAC_OS_X_VERSION_10_5)
+> /* to cricumvent a bug in Mac OS X 10.4 SDK */
+> #define vector __vector
+> #include <CoreServices/CoreServices.h>
+> #undef vector
+> #endif
+40a47,51
+> 
+> #if !defined(MAC_OS_X_VERSION_10_5)
+> typedef long int NSInteger;
+> typedef unsigned int NSUInteger;
+> #endif

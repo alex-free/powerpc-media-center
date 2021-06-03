@@ -1,0 +1,4 @@
+87c87
+<        defined(__sparc))
+---
+>        defined(__sparc)) || defined(__BIG_ENDIAN__)

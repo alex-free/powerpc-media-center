@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>PowerPC Media Center 7</title>
+    </head>
+    <body style="background-color:black; color:white;">
+
+<h1>PowerPC Media Center 7</h1>
+<p>By Alex Free. Version 6.x and below by 'Hugh Downs' ('OpenSourceMac' of Macintosh Garden) with contributions from Dan at ppclundite.</p>
+
+<p>PowerPC Media Center can:</p>
+
+<ul><li>Play exisiting media files and stream video with the latest version of the FFplay media player.</li>
+<li>Integrates with Safari to obtain URL's automatically from the last active window if Safari is open. Can also use URLs copied to the clip board . If both Safari and the clipboard contain URLs then an option to select either is presented. If no URL is found by either automatic detection method a text box appears that can be used to enter the URL in manually. </li>
+<li>Stream live YouTube live streams at 144p, 240p, 360p, 480p, and 720p. Stream ended live streams at 360p and 720p.</li>
+<li>Stream Twitch.tv live streams at 160p, 240p, 360p, 480p, and 720p.</li>
+<li>Stream YouTube videos at 360p.</li>
+<li>Download YouTube videos, Playlists, & Channels.</li>
+<li>Download SoundCloud tracks</li>
+<li>Download and convert YouTube videos to various formats, including ones compatible with Mac OS 8.6 and QuickTime 6.</li>
+<li>Convert existing media files to many formats, including Mac OS 8.6/QuickTime 6 compatible ones.</li>
+<li>Update YouTube-dl via the web interface or in app option.</li>
+<li>Use a web interface over your local network that has 100% compatibility in Classilla, Netscape 4, Internet Explorer 5, and TenFourFox to download QuickTime 6 compatible media.</li>
+<li>Download URLs with TLS 1.3 support.</li>
+<li>Access the modern programs used by PPCMC in a Terminal.app window.</li>
+<li>Download SoundCloud Tracks.</li>
+<li>Burn And Rip CDs.</li>
+<li>Convert a folder of media files to WAVs and burn them automatically to a CD-R.</li></ul>
+
+<b>YouTube and Twitch options use Youtube-dl, which may stop working if it becomes out of date. If you are getting errors when using these options, update YouTube-dl with the App or the Web Interface.</b>
+
+<b>Not all resolutions may be available on some videos (although 360p is gaurenteed), if you see an error in Terminal.app about the format not being available try a different one (360p is guaranteed to work).</b>
+
+<p><a href=https://github.com/alex-free/powerpc-media-center>GitHub</a> || <a href=https://alex-free.github.io/ppcmc7>Homepage</a> || <a href=http://macintoshgarden.org/apps/ppc-media-center-7x-youtube-streamer-downloader-convertor>Macintosh Garden</a> || <a href=https://forums.macrumors.com/threads/2-17-2021-ppcmc-7-2-2-beta-youtube-twitch-streaming-downloading-file-conversion-web-interface-more-for-panther-604-g3-g4-g5.2224743/>Official MacRumors Thread</a></p>
+
+<h2>Table Of Contents</h2>
+<ul><li><a href="#downloads">Downloads</a></li>
+<li><a href="#installingtheapp">Installing The App</a></li>
+<li><a href="#installingthewebinterface">Installing The Web Interface</a></li>
+<li><a href="#usingtheapp">Using The App</a></li>
+<li><a href="#usingthewebinterface">Using The Web Interface</a></li>
+<li><a href="#cds">Ripping And Burning CDs</a></li>
+<li><a href="#changelog">Changelog</a></li>
+<li><a href="#bundled">Bundled Programs</a></li>
+<li><a href="#licenses">Licenses</a></li>
+<li><a href="#more">More Awesome Software</a></li>
+</ul>
+
+<a name=downloads><h2>Downloads</h2></a>
+
+<h3>Version 7.2.5 (6/1/2021) - <a href="#latest">What's New In This Update?</a></h3>
+
+<ul><li><a href=https://github.com/alex-free/powerpc-media-center/releases/download/7.2.5/ppcmc_7.2.5_panther.zip>ppcmc_7.2.5_panther</a> runs on 604, G3, G4, and G5 Macs running Mac OS X 10.3.9-10.5.8.</li>
+<li><a href=https://github.com/alex-free/powerpc-media-center/releases/download/7.2.5/ppcmc_7.2.5_tiger.zip>ppcmc_7.2.5_tiger</a> runs on 604, G3, G4, and G5 Macs running Mac OS X 10.4.0-10.5.8.</li></ul>
+
+<b>Intel Tiger and Leopard may or may not work since Rosetta is required, this is not tested. Snow Leopard on both PowerPC and Intel has been verified to NOT work with PPCMC 7 by <a href=https://forums.macrumors.com/threads/3-1-2021-ppcmc-7-2-3-youtube-twitch-streaming-downloading-file-conversion-web-interface-more-for-panther-604-g3-g4-g5.2224743/post-29925434>B S Magnet</a> on the MacRumors Forums (thanks for testing!).</b>
+
+<a name=installingtheapp><h2>Installing The App</h2></a>
+<p>Copy <code>PPCMC.app</code> into your <code>/Applications</code> folder. If you try to run PPCMC.app anywhere but the /Applications folder and or rename PPCMC.app you will be prompted to change it to <code>/Applications/PPCMC.app</code>.</p>
+
+<a name=installingthewebinterface><h2>Installing The Web Interface</h2></a>
+<p>Open <code>PPCMC.app</code> and select the <code>Web Interface</code> option. Then select either <code>Install</code> or <code>Uninstall</code>. After doing so, make sure Web Sharing is enabled in your Mac's System Preferences.</p>
+
+<a name=usingtheapp><h2>Using The App</h2></a>
+
+<p>On the first launch of PowerPC Media Center, you will be asked what media player you'd like to use, as well as if you want videos to start in fullscreen automatically. After selecting your initial preferences, you can optionally edit the media player command yourself to add additional args. PowerPC Media Center will remember these preferences until the next update, however you can change them at any time with the 'Edit Preferences' main menu function in the app.</p>
+
+<p>PowerPC Media Center uses URLs to stream or download content. After you select an option that needs a URL to function, PPCMC check if it can automatically get a URL through one of the below options:</p>
+
+<ul><li>A <a href=https://www.floodgap.com/software/tenfourfox/box/>TenFourFoxBox's</a> current loaded page (please note that due to the design of TenFourFoxBoxes a majority of the entire page must be finished loading before the URL can be obtained). TenFourFox itself is not supported. When using a TenFourFoxBox for URLs in PPCMC, PPCMC will copy the URL to the clip board.</li>
+<li>Safari's current loaded page.</li>
+<li>A URL copied to the clibboard.</li>
+<li>A URL entered into a text box displayed by PPCMC if no URL can be obtained in one of the above mentioned methods.</li></ul>
+
+<p>There are  can be used in 3 ways. When PPCMC.app is opened and an option that requires a URL is selected, PPCMC.app will check if the clipboard contains a copied URL, and if Safari is open. If Safari is open the last active window's URL will be selected. If the clipboard contains a URL then it will be selected. If there is both a copied URL in the clipboard and Safari open, a prompt will display allowing you to select either URL for use. If Safari is not open and a URL is not in the clipboard a text input box appears for you to enter a URL in.</p>
+
+<p>Using TenFourFoxBoxes is what I recommend, there are some excellent options available by other PowerPC enthusiasts. <a href=https://forums.macrumors.com/threads/2021-youtube-player-for-g3-and-low-end.2277619/>Choob (YouTube)</a> and <a href=http://macintoshgarden.org/apps/aquaweb-aquavid>AquaWeb/AquaVid (YouTube/various search engines)</a> are just a few that I recommend.</p>
+
+<h3>Supported External Media Players</h3>
+
+<p>PowerPC Media Center comes with the latest version of the FFplay media player. If you do not want to use FFplay, you can use one of the following external media players:</p>
+
+<ul><li><a href=http://macintoshgarden.org/apps/quicktime-7>QuickTime version 7.3.1+</a> (only YouTube streaming is supported)</li>
+<li><a href=http://www.videolan.org/vlc/download-macosx.html>VLC version 0.8.6i+*</a></li>
+<li><a href=https://forums.macrumors.com/threads/01-feb-2020-smtube-20-1-0-os-x-10-4-alternative-for-youview-mactubes-mobile-youtube-installer.2104767/>Mplayer version 1.3+</a></li>
+</ul>
+
+<b>*The latest official VLC versions for Panther (0.8.6i) and Tiger (0.9.1) are very outdated compared to the last Leopard version (2.0.1). Twitch streaming may have incompatibility issues if using a VLC version older then 2.0.1, and FFplay should be used for Twitch streaming on Panther. VLC 0.9.1 appears to not work with YouTube streaming anymore, but Twitch remains working.</b>
+
+<h3>Streaming YouTube Videos</h3>
+<p>YouTube videos can be streamed by all 3 supported players at up to 360p. Unless the video was originally a live stream, only up to 360p can be streamed due to YouTube changes. See below on ended live stream differences to standard videos.</p>
+
+
+<h3>Streaming YouTube And Twitch Live Streams</h3>
+VLC and Mplayer can stream Twitch.tv and YouTube live streams. Some Twitch live streams can even play full speed in windowed VLC version 0.8.6i at 160p on a 300MHZ G3 with 544MB of RAM.</p> 
+
+<p>QuickTime is not supported for live stream features.</p>
+
+<p>Ended YouTube live streams can be streamed at 720p as well as 360p.</p>
+
+<p>Live Youtube live streams can be streamed in many more formats then standard videos or even past ended live streams. 144p, 240p, 360p, 480p, and 720p are all available. 480p performs very well on a fast G4.</p>
+
+<p>Twitch live streams can be streamed at 160p, 240p, 360p, 480p, and 720p.</p>
+
+<h3>Downloading YouTube Videos In The App</h3>
+
+<p>If the current URL is a channel or playlist instead of a single video, any of the below options as well as the 'Download YouTube Video(s) as M4A' option will download every video on the channel not in a playlist or the entire playlist. If a video in a Playlist is deleted or removed it will simply be skipped and the specified option will continue.</p>
+
+<p>The 'Download YouTube Video(s) as MP4 H.264' category provides options that directly download specific formats YouTube provides and combines them into one MP4 H.264 file. These files can later be played back by any media player up to the task. For resolutions higher then 480p Core Player should be used.</p>
+
+<p>The 'Download YouTube Video(s) as MP4 H.264' category excludes some lower end PowerPC systems such as the iBook G3 Clamshell 300MHz, as it is just not up to the task. Also, QuickTime versions older then 7.3.1 may not support MP4 H.264. This is important since Mac OS 8.6-9.2.2 can run only up to QuickTime 6. QuickTime 6 does not support H.264 MP4 files, however it was the first version to support MP4 Part 2. MP4 Part 2 is the direct predecessor of H.264. These reasons are why the 'Download+Convert YouTube Video(s) for QuickTime 6' category exists. Along with providing MP4 Part 2 options, MP3 and even MP1 for a 300MHz G3 is provided in this  category. All options that also convert the downloaded YouTube videos will take longer then the options in the 'Download YouTube Video(s) as MP4 H.264' and  using the fastest PowerPC Mac available is recommended to speed up conversion time.</p>
+
+<h2>Converting Existing Files</h2>
+<p>The Convert Media File option supports the following output formats listed below.</p>
+<li>240p MPEG 1</li>
+<li>360p MPEG 1</li>
+<li>480p MPEG 1</li>
+<li>240p MP4 Part 2</li>
+<li>360p MP4 Part 2</li>
+<li>480p MP4 Part 2</li>
+<li>720p MP4 Part 2</li>
+<li>MP3 @320KB/s Birtate</li>
+<li>MP3 @128KB/s Birtate</li>
+<li>MP3 @96KB/s Birtate</li>
+<li>Mono MP3 @320KB/s Birtate</li>
+<li>Mono MP3 @128KB/s Birtate</li>
+<li>Mono MP3 @96KB/s Birtate</li></ul>
+<p>The 240p and 360p options have a video bitrate limit of 500KB/s. The 480p options have a video bitrate limit of 1MB. The 720p options have a video bitrate limit of 3MB. These specifications were chosen for compatibility and performance reasons.</p>
+
+<h2>Misc Options</h2>
+<p>The PPCMC Shell option presents you a special Terminal.app window that adds the PPCMC subsystem to the $PATH. This allows you to use OpenSSL, Python, CURL, or any other program within PPCMC.</p>
+<p>The About option displays the versions of PPCMC's dependency programs.</p>
+<p>Other misc options are quite self explanatory.</p>
+
+<a name=usingthewebinterface><h2>Using The Web Interface</h2></a>
+<p>The web interface allows you to use select options remotely on your local network. Specifically written to be compatible with Internet Explorer 5, Classilla, Netscape Navigator 4, and TenFourFox. It is ran from one PPC Mac with PPCMC installed that is connected to a local network and the Internet. Other devices on the same local network can access the Web Interface.</p>
+
+<h3>Connecting Devices</h3>
+<p>Get the URL of your PPCMC Mac from the System Preferences Sharing section, it will be displayed after Web Sharing is turned on.</p>
+<p>Then using any computer in the same local network, load the URL + ppcmcw/index.php in a Web browser. Example URL below (replace 192.168.1.123 with your Web Sharing IP).</p>
+<p>http://192.168.1.123/ppcmcw/index.php</p>
+<b>Do not hit the server with multiple requests, only one at a time is currently supported.</b>
+
+<h3>Downloading YouTube Videos With The Web Interface</h3>
+<p>Select any of the download options presented on the web interface homepage. The new page will contain a text box, paste any YouTube-dl link into it and click the Go button. This may take quite a few minutes, all depending on length of video, specified file type, and speed of the server running it. This is why you should run the web interface on the most powerful Mac OS X 10.3.9-10.6.8 Mac you have. After the process completes, the browser will stop loading and the output of all commands used to complete your request will be displayed. You can then click the Downloads link in the web interface to go to the dl directory. This directory contains any videos downloaded via the web interface, which can be downloaded directly to your Mac. This can be cleared by clicking the delete all button on the home page.</p>
+
+<h3>Streaming Web Interface Files On The DL Page</h3>
+<p>QuickTime 6 MP4's as well as MP3's can be streamed directly from the dl directory with a compatible web browser. Alternatively you can open the URL in Quicktime 6, which enables fullscreen playback and better performance.</p>
+
+<h3>Displaying URLs With TLS 1.3 Support</h3>
+<p>The Display URL option allows you to view websites within the web page using up to TLS 1.3. HTML, mostly text based pages work best. Viewing websites in this way is static. Websites that partially work include wikipedia.org, macintoshgarden.com (even downloads), macos9lives.com, and YouTube.com (no streaming obviously). Keep in mind this results in something broken but most times readable and better then nothing.</p>
+
+<a name=cds><h2>Burning And Ripping CDs</h2></a>
+
+<p>As of PowerPC Media Center 7.2.4, PowerPC Media Center can burn and rip CDs. To use this functionality, Open PPCMC.app, and double click <code>CD Options</code>. You will be presented with the following options:</p>
+
+<ul><li><code>Burn Audio CD</code> - Allows you to select an existing <code>.toc</code> or <code>.cue</code> file and burn a standard audio CD</li>
+<li><code>Burn Data CD Or Mixed Mode Data+Audio CD</code> - Allows you to select an existing <code>.toc</code> or <code>.cue</code> file and burn either a data-only CD or a mixed mode CD with both audio and data. This option works for burning PSX/Playstation 1 backups and homebrew CDs. Other consoles like the Sega Saturn and Sega CD will also probably work with this option as it byte swaps audio data in mixed mode CDs automatically.</li>
+<li><code>Burn Folder Of WAVs To Audio CD</code> - Allows you to select an existing folder of *.WAV and or *.wav files to burn as a standard audio CD. This will also automatically create a <code>.cue</code> file in the folder of *.WAV and or *.wav files for future use, such as with the previously mentioned <code>Burn Audio CD</code> option in PPCMC7.</li>
+<li><code>Convert And Burn Folder Of Media Files To Audio CD</code> - Allows you to select an existing folder containing <b>any</b> media file type, automatically convert it to .wav, generate a <code>.cue</code> file, and then burn it to a standard Audio CD.</li>
+<li><code>Rip Audio CD</code> - Rips a standard Audio CD in raw mode.</li>
+<li><code>Rip Data CD Or Mixed Mode Data+Audio CD</code> - Rips a data or mixed mode data+audio cd in raw mode.  This option works for burning PSX/Playstation 1 backups and homebrew CDs. Other consoles like the Sega Saturn and Sega CD will also probably work with this option. Disregard the audio byte swap message at the end of ripping as PPCMC7 automatically does this when burning mixed mode data+audio CDs.</li></ul>
+
+<a name=changelog><h2>Changelog</h2></a>
+<p>Originally created by 'Hugh Downs' ('OpenSourceMac' of Macintosh Garden) with contributions from Dan at ppclundite, PowerPC Media Center was in development for 6 years until the last final update. All versions 7.0 and above have been worked on by Alex Free. 'Wicknix' of the MacRumors PPC forum is responsible for the Twitch.tv live stream support. 'Wowfunhappy' of the same site suggested a solution to make one FFMPEG work on G3's wltb AltiVec disabled but also G4's and G5's with AltiVec enabled.</p>
+
+<p>I am also very grateful for Thomas Bernard's SDL 2.0.3 patches for Mac OS X 10.4 PPC that I came across at https://gist.github.com/miniupnp/26d6e967570e5729a757 . I used the same changes but made new patch files for the SDL2 included within PPCMC.
+
+<a name=latest><h3>7.2.5 - 6/1/2021</h3>
+
+<ul><li>Fixed python 3.6 ssl import bug.</li></ul>
+
+<h3>>7.2.4 - 5/26/2021</h3>
+
+<h4>Bug Fixes</h4>
+
+<p>Fixed a bug which made QuickTime streaming not update to use a new URL.</p>
+<p>Fixed a bug where file conversions would have a higher bitrate then the option implied the limit was.</p>
+<p>Fixed a bug where G3/604 Macs would crash when using FFMPEG related features.</p>
+<p>Removed the Leopard optimized version to simplify and speed up future development since Panther_SDL2 does NOT build on Leopard correctly (RUNS fine on Leopard if built on Tiger), just use the Tiger version on Leopard for right now.</p>
+<p>Fixed the download any url option to use the get_url function.</p>
+
+<h4>New Features</h4>
+<p>Removed highlighting of the folders PPCMC generates per user request.</p>
+<p>Changed youtube-dl to execute the main .py script directly with no decompression for a performance and speed boost.</p>
+<p>Changed youtube-dl to update to the latest git commit on GitHub directly  so users can get new features and updates without waiting for it to be packaged into a release.</p>
+<p>Significantly optimized and cleaned up how real youtube-dl URLs are retrieved in the Applescript code by condensing the many multiple functions into just one.</p>
+<p>Added a new "CD Options" category to the main menu, with the following sub options: "Burn Audio CD", "Burn Data CD Or Mixed Mode Data+Audio CD", "Burn Folder Of WAVs To Audio CD", "Convert And Burn Folder Of Media Files To Audio CD", "Rip Audio CD", "Rip Data CD Or Mixed Mode Data+Audio CD". All of which use the newly included cdrdao.</p>
+
+<h4>New Updates To Bundled Software</h4>
+<p>Updated FFMPEG/FFPLAY/FFPROBE to the latest version 4.4 and removed altivec patches since they are no longer needed.</p>
+<p>Updated the internal certificate to the latest 4-13 version extracted by the cURL project on April 13th 2021.</p>
+<p>Updated OpenSSL to the latest version 1.1.1k.</p>
+<p>Updated Curl to the latest version 7.61.1 and removed the min macosx version min patch since it is no longer needed.</p>
+
+<h4>New Bundled Software</h4>
+<p>Added cdrdao v1.2.0.</p>
+<p>Added the latest version of git v2.31.1</p>
+<p>Added the latest version 0.29.2 of pkg-config.</p>
+
+<h3>7.2.3 - 3/1/2021, This Release Had More Delays Then CyberPunk 2077...</h3>
+<p>All streaming options have been rewritten to use direct video URLs, execute in the background, and not use Terminal.app. All of these changes improve CPU/RAM usage and UX.</p>
+<p>Switched from the out of date LAME version 3.99.5 to the latest version 3.100 LAMEVMX by Cameron Kaiser.</p>
+<p>YouTube-dlc development had died, and YouTube-dl is back on GitHub so PPCMC once again uses the original YouTube-dl.</p>
+<p>OpenSSL has been updated to the latest 3.0 Alpha 12.</p>
+<p>CURL has been updated to the latest 7.75.0.</p>
+<p>The <code>ffplay-yt</code> wrapper now accepts an unlimited number of arguments instead of just one.</p>
+<p>TenFourFoxBox URL support has now been added for all URL based options.</p>
+<p>The CA Certificates extracted from Mozilla by cURL have been updated to the January 19th 2021 extraction.</p>
+<p>VLC.app can now be anywhere, not just in the <code>/Applications</code> directory. The preferences system has been updated to allow you to choose where it is.</p>
+<p>Python has been updated from 2.7.18 to 3.6.12, which is still getting security updates until the end of 2021.</p>
+<p>FFmpeg, FFplay, and FFprobe have been updated to the latest version, 4.3.2.</p>
+<p>There are now 3 optimized builds of PPCMC 7. 10.3.9 using the 10.4 SDK @ the 10.3 API level. 10.4.x using the 10.4 SDK @ the 10.4 API level. 10.5.x using the 10.5 SDK @ the 10.5 API level.</p>
+
+<h3>7.2.1 - 10/29/2020</h3>
+<p>Better FFplay performance.</p>
+<p>Replaced YouTube-dl 9.20.2016 with YouTube-dlc 10.26.2020. The updater has also been changed to use YouTube-dlc, as YouTube-dl development has stopped since the DMCA.</p>
+<p>Rewrote and fixed the preference system. You can now also edit the media player command if you want to expand your initial preferences.</p>
+<p>Implemented Dronecatcher on the MacRumor forums suggestion setting the ffplay log level to quiet by default.</p>
+
+<h3>7.2 - 10/26/2020</h3>
+<p>Updated cURL to latest version, 7.73.0.</p>
+<p>Enabled Zlib in cURL.</p>
+<p>Updated OpenSSL to latest version, 3.0 Alpha 7.</p>
+<p>Added latest version of FFplay, 4.3.1.</p>
+<p>Updated YouTube-dl to latest version, 2020.09.20.</p>
+<p>New UI and prefernces in app.</p>
+<p>Added Panther_SDL2 release 1 (SDL2 2.0.3.</p>
+<p>Rewrote build system, now creates a Tiger and Panther optimized builds.</p>
+
+<h3>7.1.9 - 8/15/2020</h3>
+<p>Updated OpenSSL to latest version, 3.0 Alpha 6.</p>
+<p>Updated FFMPEG to latest version, 4.3.1.</p>
+<p>Updated YouTube-dl to latest version, 2020.07.28.</p>
+
+<p>Added an option to download a YouTube video as a 720p MP4 and open in CorePlayer.</p>
+<h3>7.1.8 - 7/15/2020</h3>
+<p>YouTube live stream at 360p fix</p>
+<h3>7.1.7 - 7/11/2020</h3>
+<p>YouTube live stream support at 144p, 240p, 360p, 480p, and 720p.</p>
+<p>Mplayer support.</p>
+<p>Updated FFMPEG to latest version, 4.3. Some AltiVec code is broken in version 4.3 so I have reverted 3 files to what they were in FFMPEG 4.2.3 to fix the issue. This is a workaround until the stable FFMPEG has correct AlTiVec code.</p>
+<p>Added SoundCloud download option.</p>
+<p>Added 720p streaming of ended YouTube live streams in VLC and Mplayer..</p>
+<p>Support for Converting existing files to 96KB/s, 128KB/s, and 320KB/s MP3s. Mono options are also available for the above.</p>
+<p>Updated and fixed the 720p YouTube format for downloading YouTube videos as 720p H.264 MP4 files, which work very well on a fast G4 with Core Player.</p>
+<p>All VLC and Mplayer options now support full screen.</p>
+<p>Updated CA Certificate PEM to the latest 6/24/2020 cURL Mozilla extraction.</p>
+<p>Updated Curl to latest version 7.71.1.</p>
+<p>Official PowerPC 604 support.</p>
+
+<h3>7.1.6 - 6/27/2020</h3>
+<p>Updated FFMPEG to the latest version, 4.2.3.</p>
+<p>Full screen option removed due to not working on Panther.</p>
+<p>Fixed Panther only instability.</p>
+<p>New HTML documentation and 'licenses' directory in releases.</p>
+<p>A new optimized AlTivec enabled FFMPEG G4/G5 only build will always be released alongside the standard G3/G4/G5 one.</p>
+<p>Every dependency is compiled with the Mac OS X 10.4 Universal SDK at the Mac OS X 10.3 level. Before all programs that could use the 10.3.9 SDK used it, and all others used the 10.4 Universal SDK. This change has been made so that the 10.3.9 SDK is not required for building, and does not affect compatibility whatsoever. Mac OS X 10.3.9 universal G3/G4/G5 binaries are still produced from any Leopard Mac using the build script.
+<p>Fixed the Download 360p MP4 option.</p>
+<h3>7.1.5 - 5/11/2020</h3>
+<p>Fixed Twitch.tv 160p stream option.</p>
+<h3>7.1.4 - 5/10/2020</h3>
+<p>Added Twitch.tv live streaming support thanks to wicknix on the MacRumors Forums. His method allows streaming Twitch.tv live streams with VLC 0.8.6i, the last VLC version released for Mac OS X 10.3.9 panther.</p>
+<p>Enabled Zlib in FFMPEG compile.</p>
+<p>More efficient functions in app. </p>
+<p>Added YouTube video streaming support for VLC.</p>
+<h3>7.1.3 - 5/7/2020</h3>
+<p>Improved the Web Interface uninstaller and installer scripts. </p>
+<h3>7.1.2 - 5/7/2020</h3>
+<p>If a URL is required for the selected option and one is not copied to the clipboard, PPCMC will check if Safari is running. If Safari is running the URL of the last active window will be set as the URL. This means you can simply load the YouTube video's web page, and then open the PPCMC app to use the Safari URL. If Safari is not running a text input box will be presented to enter the URL manually. If Safari is running and a URL is copied to the clipboard, an option menu will be presented for the user to select either URL.</p>
+<p>Implemented choose file and choose directory, replacing the text input boxes of relevant features. </p>
+<p>Download Any URL option now can use a link copied to the clipboard.</p>
+<p>Updated OpenSSL to version 1.1.1g.</p>
+<p>Updated Curl to version 7.70.0.</p>
+<p>Updated Python to version 2.7.18.</p>
+<p>Cleaned up code and reduced complexity by implementing more universal functions.</p>
+<p>YouTube-dl downloader now displays the Youtube-dl version before and after download.</p>
+<p>Improved UX in Convert Media File option.</p>
+<p>Improved documentation.</p>
+<p>M4A option now embeds thumbnails.</p>
+<p>Added back full screen streaming functionality (as was in older PPCMC builds) with the new Stream Full Screen option.</p>
+<p>On launch the app now checks if it is running in the /Applications directory, or somewhere else. Running anywhere but the /Applications directory is not supported and a dialogue will now display informing the user if this happens.</p>
+<p>Added the latest version of AtomicParsley, version 0.9.0 for M4A thumbnail support.</p>
+<h3>7.1.1 - 4/15/2020</h3>
+<p>MPEG 1 converting fixed.</p>
+<p>Input file paths and Output file paths specified in the Convert Media File option no longer need to be escaped with slashes. This means a file path like "~/Desktop/some media file (official file).mp4" now works.</p>
+<p>The Convert Media File option has been completely rewritten to include the following options:
+240p MPEG 1 (Up To 500 KB/s Video Bitrate)
+360p MPEG 1 (Up To 500 KB/s Video Bitrate)
+480p MPEG 1 (Up To 1 MB/S Video Bitrate)
+240p MP4 Part 2 (Up To 500 KB/s Video Bitrate)
+360p MP4 Part 2 (Up To 500 KB/s Video Bitrate)
+480p MP4 Part 2 (Up To 1 MB/s Video Bitrate)
+MP3 @320KB/s Bitrate</p>
+<h3>7.1 - 4/7/2020</h3>
+<p>Web Interface 0.5 beta, now can be ran from Mac OS X 10.4-10.6.</p>
+<p>New Web Interface option, Display URL. This allows you to view certain web pages up to TLS 1.3 in ancient browsers.</p>
+<h3>7.0.9 - 4/2/2020</h3>
+<p>Web Interface 0.4 beta, a YouTube download website for ancient browsers.</p>
+<p>OpenSSL updated to latest version 1.1.1f.</p>
+<p>Download MP1 For 300MHZ G3 option added to PPCMC.app and web interface. Looks stunning on the Clamshell.</p>
+<h3>7.0.8 - 3/20/2020</h3>
+<p>For download options that specify resolution, it is specifically requested. Note that not all resolutions may be available. If for example 480p is not available, try 360p and so on. This change has been made to prevent incompatible video formats from being downloaded.</p>
+<p>Added 2 new options, Download 144p MP4 and Download 144p MP4 For QuickTime 6.</p>
+<h3>7.0.7 - 3/20/2020</h3>
+<p>All video related download options now disable the av01 video codec and forces standard MP4 x264. </p>
+<p>3GP is no longer supported due to sync issues that can not be fixed.</p>
+<p>At the request of the original author, the download MP3 option now only downloads M4A audio which makes converting much faster for said option.</p>
+<p>Any MP4 x264, MP4 Part 2, or MP3 can now be converted with the Convert Media File option.</p>
+<p>Removed legacy, now unnecessary YouTube-dl arguments for streaming.</p>
+<p>Added PPCMC Shell option. You now have the full power of PPCMC's modern subsystem available at any time in a special Terminal window.</p>
+<p>Updated Curl to the latest version, 7.69.1.</p>
+<p>You can now download any URL with PPCMC using the Download Any URL option which supports up to TLS v1.3. That's right, TLS 1.3 on Panther.</p>
+<h3>7.0.6 - 3/11/2020</h3>
+<p>Added M4A downloading.</p>
+<h3>7.0.5 - 3/11/2020</h3>
+<p>3GP streaming and download.</p>
+<h3>7.0.4 - 3/10/2020</h3>
+<p>FFMPEG is now compiled with altivec disabled and for arch ppc to fix G3 support.</p>
+<p>Curl has been updated to the latest version, 7.69.0.</p>
+<p>You can now open PPC Media Center and use features that don't require a URL if you have no URL copied to the clipbord.</p>
+<p>When a URL is copied and PPC Media Center is opened, it is displayed as the title of the window.</p>
+<p>MP4 Part 2 Download and convert options for 240p, 360p, and 480p now allow videos to be played back on Mac OS 9 using QuickTime 6.1.</p>
+<p>Added latest Bzip2 1.0.8 for FFMPEG.</p>
+<h3>7.0.3 - 3/4/2020</h3>
+<p>PPC-Media-Center.app is now PPCMC.app.</p>
+<p>OpenSSL updated to 1.1.1d.</p>
+<p>New Mozilla CA Certificate PEM.</p>
+<p>Zlib 1.2.11 is now used instead of the ancient one in Mac OS X.</p>
+<p>Mac OS X 10.3.9 support.</p>
+<h3>7.0.2 - 2/28/2020</h3>
+<p>Added 240p, 360p, 480p, 720p, 1080p, download video options. These will download the best mp4 video stream and m4a audio stream up to the selected resolution and ffmpeg will make them one mp4 file.</p>
+<p>Added download best video quality option, to download the highest quaility mp4 video stream and m4a audio stream available.</p>
+<p>Make MP3 Options now download 480p videos with the best mp4 video stream and m4a audio stream.</p>
+<p>Added about option to display the information about the installed command line utilities.</p>
+<h3>7.0.1 - 2/26/2020</h3>
+<p>Fixed FFMPEG error.</p>
+<p>FFMPEG is now compiled with OpenSSL enabled.</p>
+<p>The build script now uses my patch to disable texi2info usage in the Makefile of FFMPEG.</p>
+<p>Changed build.sh detect compiled app bundles in it's directory instead for a cleaner build.</p>
+<p>Changed build.sh to exit on error.</p> 
+<h3>7.0 - 2/25/2020</h3>
+<p>Everything is compiled into the .app. No weird installation of multiple packages, just copy the .app to /Applications.</p>
+<p>All of the dependencies have been replaced with my modern compiled ones. They are openssl 1.0.2u, curl 7.68.0, the curl CA bundle, ffmpeg 4.2.2, lame 3.99.5, Python 2.7.17, and the latest YouTube-dl. All of these are compiled into the app, TenFourFox style.</p>
+<p>Everything uses SSL/TLS/HTTPS now.</p>
+<p>To compile all of the dependencies in this weird awesome way, I've included a build script in the new source release.</p>
+<p>You can now download the latest YouTube-dl with PPC Media Center.</p> 
+<p>Auto Downloader now removed since rstFndr.app is not open source.</p>
+
+<a name=bundled><h2>Bundled Programs</h2></a>
+
+<p>PowerPC Media Center would not be possible without the work of many others, and their awesome projects all listed below!</p>
+<ul><li>OpenSSL 1.1.1k - <a href=https://www.openssl.org/source>https://www.openssl.org/source</a></li>
+<li>Curl 7.76.1 - <a href=https://curl.se/download.html>https://curl.se/download.html</a></li>
+<li>Panther_SDL2 2.0.3 (current main SDL2 release is version 2.0.14) - <a href=https://github.com/alex-free/panther_sdl2>https://github.com/alex-free/panther_sdl2</a>, <a href=https://www.libsdl.org/download-2.0.php>https://www.libsdl.org/download-2.0.php</a></li>
+<li>FFMPEG 4.4 (includes FFplay and FFprobe) <a href=https://ffmpeg.org/download.html>https://ffmpeg.org/download.html</a></li>
+<li>Python 3.6.13 (latest Python 3.6, current Python release is version 3.9.2) <a href=https://www.python.org/downloads>https://www.python.org/downloads</a></li>
+<li>LAMEVMX 3.100 <a href=https://github.com/classilla/lamevmx>https://github.com/classilla/lamevmx</a>, <a href=https://lame.sourceforge.io>https://lame.sourceforge.io</a> </li>
+<li>Zlib 1.2.11 - <a href=https://zlib.net>https://zlib.net</a></li>
+<li>Mozilla's CA PEM extracted by the cURL project on 4/13/2021 - <a href=https://curl.se/docs/caextract.html>https://curl.se/docs/caextract.html</a></li>
+<li>Bzip2 1.0.8 - <a href=https://www.sourceware.org/bzip2>https://www.sourceware.org/bzip2</a></li>
+<li>YouTube-dl version 2021.5.16 - <a href=https://ytdl-org.github.io/youtube-dl/download.html>https://ytdl-org.github.io/youtube-dl/download.html</a></li> 
+<li>AtomicParsley version 0.9.0 - <a href=http://atomicparsley.sourceforge.net/>http://atomicparsley.sourceforge.net</a></li>
+<li>Git version 2.31.1 - <a href=https://git-scm.com/>https://git-scm.com</a></li>
+<li>CDRdao version 1.2.0 (latest version is 1.2.4) - <a href=http://cdrdao.sourceforge.net/>http://cdrdao.sourceforge.net</a></li>
+<li>PKG-config version 0.29.2 - <a href=https://www.freedesktop.org/wiki/Software/pkg-config/>https://www.freedesktop.org/wiki/Software/pkg-config</a></li>
+</ul>
+
+<p>Unless otherwise noted, each program is the newest version and up to date as of this release on 6/1/2021.</p>
+
+<a name=licenses><h2>Licenses</h2></a>
+<p>PPCMC itself is released into the Public Domain, however it uses many dependency programs under different terms. All licenses are distributed within each release, in the 'licenses' folder. PPCMC is entirely open source, all patches, source code, and build scripts are available in the separate source download.</p>
+
+<a name=more><h2>More Awesome Software</h2></a>
+
+<ul><li><a href=https://alex-free.github.io>On My Website</a></li>
+<li><a href=http://macintoshgarden.org/games/minecraft-152>Minecraft 1.2.5 and 1.5.2 PowerPC Edition</a></li>
+<li><a href=http://macintoshgarden.org/apps/poweruoc-tenfourfox>TenFourFoxPEP - For A Faster TenFourFox</a></li>
+<li><a href=https//macintoshgarden.org/apps/aquaweb-aquavid</a>AquaWeb / AquaVid</li>
+<li><a href=https://macintoshgarden.org/apps/tenfivetube>TenFiveTube</a></li></ul>
+    </body>
+</html>

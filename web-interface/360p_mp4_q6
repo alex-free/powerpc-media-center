@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+export SSL_CERT_FILE=/Applications/PPCMC.app/certs/cacert.pem
+export REQUESTS_CA_BUNDLE=/Applications/PPCMC.app/certs/cacert.pem
+rm -rf /Library/WebServer/Documents/ppcmcw/tmp/*
+rm -rf /Library/WebServer/Documents/ppcmcw/tmp2/*
+
+/Applications/PPCMC.app/bin/python2.7 /Applications/PPCMC.app/bin/youtube-dl --prefer-ffmpeg --ffmpeg-location=/Applications/PPCMC.app/bin/ffmpeg -f 134+140 -o /Library/WebServer/Documents/ppcmcw/tmp/"%(title)s.%(ext)s" $1
+
+basefile=$(ls -1 /Library/WebServer/Documents/ppcmcw/tmp/ | sed -e 's/\.mp4$//')  
+
+/Applications/PPCMC.app/bin/ffmpeg -i "/Library/WebServer/Documents/ppcmcw/tmp/$basefile.mp4" -qscale 0 -vcodec mpeg4 "/Library/WebServer/Documents/ppcmcw/tmp2/$basefile.mp4" 2>&1
+
+cp "/Library/WebServer/Documents/ppcmcw/tmp2/$basefile.mp4" "/Library/WebServer/Documents/ppcmcw/dl/$basefile.mp4"
+rm -rf /Library/WebServer/Documents/ppcmcw/tmp/*
+rm -rf /Library/WebServer/Documents/ppcmcw/tmp2/*

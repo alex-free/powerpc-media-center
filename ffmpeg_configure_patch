@@ -1,0 +1,4 @@
+6495c6495
+<     SDL2_CONFIG="${cross_prefix}sdl2-config"
+---
+>     SDL2_CONFIG="/Applications/PPCMC.app/bin/sdl2-config"

@@ -1,0 +1,21 @@
+#!/bin/bash
+app=/Applications/PPCMC.app
+wdir=/Library/WebServer/Documents/ppcmcw/
+cd $app/web-interface
+echo "Web Interface Version 0.5 Installer"
+mkdir -p $wdir/tmp
+mkdir -p $wdir/tmp2
+mkdir -p $wdir/dl
+mkdir -p $wdir/bin
+cp *.php $wdir
+cp wcli $wdir/bin/
+chmod -R 777 $wdir
+if [ -f "/etc/httpd/httpd.conf" ]; then
+ patch /etc/httpd/httpd.conf add_php_4_patch > /dev/null 2>&1
+fi
+if [ -f "/etc/apache2/httpd.conf" ];  then
+ patch /etc/apache2/httpd.conf add_php_5_patch  > /dev/null 2>&1
+fi
+ apachectl stop > /dev/null 2>&1
+ apachectl start > /dev/null 2>&1
+echo "Complete. Web sharing must be turned on in System Preferences to begin using the web interface."
