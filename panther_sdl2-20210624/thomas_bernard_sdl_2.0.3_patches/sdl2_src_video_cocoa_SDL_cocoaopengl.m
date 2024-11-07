@@ -1,0 +1,4 @@
+349a350
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+352a354
+> #endif

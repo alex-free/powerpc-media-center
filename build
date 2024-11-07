@@ -1,0 +1,728 @@
+#!/bin/bash
+
+version=7.2.7
+app=/Applications/PPCMC.app
+
+m4=m4-1.4.19
+libtool=libtool-2.52.2
+pkg_config=pkg-config-0.29.2
+perl=perl-5.32.1
+make=make-4.4.1
+bash=bash-5.1
+libtool=libtool-2.5.3
+cert=cacert-2024-09-24.pem
+youtube_dl=youtube-dl-master-c5098961b04ce83f4615f2a846c84f803b072639
+youtube_dlp=yt-dlp-master-b6dc2c49e8793c6dfa21275e61caf49ec1148b81
+gas_preprocessor=gas-preprocessor.pl
+
+# Since compilation takes such a long time, you may want to only build certain programs.
+# You can only do this is if:
+# 1) The dependencies required for that specific program have already been built, or are still set to "true".
+# 2) You have changed the build_xyz values (i.e. build_panther_sdl2=false) corresponding to the specific program below to false.
+# 3) You have set the "delete_app" value below to "false".
+delete_app=true
+
+# Note: the following are in the order that they are compiled.
+
+# Builds with 10.3.9 SDK without any 10.4 only features needed.
+libiconv_for_panther=libiconv-1.11.1
+build_libiconv_for_panther=true
+
+# Requires GNU libtool (not tiger shipped one from Xcode).
+libiconv_for_tiger=libiconv-1.17
+build_libiconv_for_tiger=true
+
+# Used by FFMpeg.
+# Depends: none.
+panther_sdl2=panther_sdl2-20210624
+build_panther_sdl2=true
+
+# Used by FFMpeg.
+# Depends: none.
+lame=lamevmx-master-93b8707c0b2bc4f1fdd4c05e3e8de81e76a5dbba
+build_lame=true
+
+# Enables YouTube-dl/YouTube-dlp to embeds artwork into music files.
+# Depends: none.
+atomic_parsley=atomic-parsley-0.9.0
+build_atomic_parsley=true
+
+# Required for Python, OpenSSL, FFmpeg, cURL.
+# Depends: none.
+zlib=zlib-1.3.1
+build_zlib=true
+
+# Used by FFMpeg, Python, cURL.
+# Depends: Perl, Zlib.
+openssl=openssl-1.1.1w
+build_openssl=true
+
+# Required to build Python 3.10.15.
+# Depends: None.
+libffi=libffi-3.4.5
+build_libffi=true
+
+# Enables YouTube-dlp to work (currently requires Python 3.10.15). YouTube-dl also works with this. Tiger only, can't build this for Panther at the moment.
+# Depends: LibFFI, Zlib, OpenSSL. Tiger or newer required.
+python_for_tiger=python-3.10.15
+build_python_for_tiger=true
+
+# Python version for Panther builds. While this can't use YouTube-dlp, but YouTube-dl works great.
+# Depends: Zlib, OpenSSL. Used for Panther build.
+python_for_panther=python-3.6.15
+build_python_for_panther=true
+
+# cURL expects this by default during building. While it can be disabled and built without this library, we can just build it no problem and give cURL what it wants.
+# Depends: Python 3, libiconv. Used in cURL.
+libpsl=libpsl-0.21.5
+build_libpsl=true
+
+# cURL is used for updating YouTube-dlp and YouTube-dl.
+# Depends: OpenSSL, Zlib, libspl.
+curl=curl-8.10.1
+build_curl=true
+
+# Later FFmpeg versions require C11. Need to find the absolute last C99 version. But this version of FFmpeg is very polished and works amazing.
+# Depends: OpenSSL, Zlib, GNU Make, panther_sdl2.
+ffmpeg=ffmpeg-4.4.5
+build_ffmpeg=true
+
+# For easy test of FFmpeg compilation.
+only_build_ffmpeg=false
+if [ $only_build_ffmpeg = "true" ]; then
+    # Assumes we got to where we can build FFmpeg in Dev mode (every other dependency already compiled at this point).
+    delete_app=false
+    build_libiconv_for_tiger=false
+    build_libiconv_for_panther=false
+    build_panther_sdl2=false
+    build_lame=false
+    build_atomic_parsley=false
+    build_zlib=false
+    build_openssl=false
+    build_libffi=false
+    build_python_for_tiger=false
+    build_python_for_panther=false
+    build_libpsl=false
+    build_curl=false
+fi
+
+build_start=$(date)
+
+tmp=$(mktemp -d /var/tmp/ppcmc7-build-system.XXX)
+# Because this isn't /tmp, we need to make it rwx:
+chmod -R 777 $tmp
+
+# When this script exits, automatically delete the temp directory.
+cleanup() 
+{ 
+    if [[ -e $tmp ]]; then
+        echo "Clearing temp files..."  
+        rm -rf $tmp   
+    fi
+}
+trap cleanup EXIT
+
+set -e
+
+# About extraction/copying of automake/autoconf projects: https://www.gnu.org/software/automake/manual/1.7.4/html_node/maintainer_002dmode.html
+
+# If we cared to not trigger the above, we can do special handling. Tar preserves time stamps, so we just need to tar extract with either args zxvf (.gz verbose) or tar jxvf (.bz2 verbose). Then we use cp -Rp (recursive keep permissions/time stamps) to copy the source directory into our temp directory. -R (recursive, supports copying actual symlinks rather then creating hard links) -p (preserve time stamps and permissions) is valid for the BSD derived cp in Tiger. For GNU core utils cp, I think -rp is the equivalent (but we don't use GNU core utils cp).
+
+# We don't care to do the above because when we upload to github we destroy the file and directory time stamps. So instead, we disable AM_MAINTAINER_MODE if it present in the program to compile, which ignores file and directory time stamps. If AM_MAINTAINER_MODE is not present, we need to restore the timestamps from the original tarball pre upload with git to work around it.
+
+restore_file_and_directory_time_stamps()
+{
+    echo "Restoring file and directory time stamps for $1..."
+    cp $1-time-stamps.txt $tmp/$1
+    ( cd $tmp/$1 && while IFS= read -r line; do touch -t "$(date -r "$(echo "$line" | awk '{print $1}')" +"%Y%m%d%H%M")" "$(echo "$line" | cut -d' ' -f2-)"; done < $1-time-stamps.txt )
+}
+
+generate_file_and_directory_time_stamps()
+{
+    if [ ! -f "$1-time-stamps.txt" ]; then
+        echo "Generating file and directory time stamps for $1..."
+        cd $1
+        find . \( -type f -o -type d \) -exec stat -f "%m %N" {} \; > ../$1-time-stamps.txt
+        cd ../
+    else
+        # This is incredibly important when release=false is set. This prevents us from overwriting the known good file and directory time stamp files with garbage due to github upload or whatever. The benefit with release=false is that if we add or update any programs, the timestamp file won't exist, but it will have actual good time stamps since it has obviously just been extracted into the source tree from a good tarball and hasn't been uploaded to git yet because it's in the middle of a development release.
+        echo "$1-time-stamps.txt already exists and will not be regenerated."
+    fi
+}
+
+generate_app () {
+    mkdir -p $app
+
+    # Update AppleScript. Useful to update the Apple Script in the releases after building the whole thing.
+    if [ ! -d PPCMC.app/Contents/Resources ]; then
+        echo "Could not find PPCMC.app. To compile all of these dependencies you need to first compile the PPCMC.scpt file as an Apple Script Application Bundle named PPCMC.app, with the startup screen option disabled. To do so, open the PPCMC.scpt file in the Apple Script Editor and save it as an Application bundle in this directory as PPCMC.app. After doing so, run sudo ./build again to continue building."
+        exit 1
+    fi
+    
+    cp -R PPCMC.app /Applications
+    # Add app icon.
+    cp applet.icns $app/Contents/Resources
+
+    # Reset preferences
+    rm -f $app/vp-pref
+    rm -f $app/yt-pref
+    
+    # Set permissions.
+    chmod -R 777 $app
+    echo "Updated $app"
+}
+
+generate_release() {
+    # Update AppleScript. Useful to update the Apple Script in the releases after building the whole thing.
+    if [ ! -d PPCMC.app/Contents/Resources ]; then
+        echo "Could not find PPCMC.app. To compile all of these dependencies you need to first compile the PPCMC.scpt file as an Apple Script Application Bundle named PPCMC.app, with the startup screen option disabled. To do so, open the PPCMC.scpt file in the Apple Script Editor and save it as an Application bundle in this directory as PPCMC.app. After doing so, run sudo ./build again to continue building."
+        exit 1
+    fi
+    
+    cp -R PPCMC.app ppcmc-v$version-$1
+    # Add app icon.
+    cp applet.icns ppcmc-v$version-$1/PPCMC.app/Contents/Resources
+
+    # Update docs
+    mkdir -p ppcmc-v$version-$1/licenses
+    cp -R readme.md changelog.md build.md credits.md ppcmc-v$version-$1
+    cp unlicense.md ppcmc-v$version-$1/licenses/ppcmc.md
+
+    # Copy licenses of all programs distributed in the app (not build dependencies).
+    cp $atomic_parsley/COPYING ppcmc-v$version-$1/licenses/atomic-parsley.md
+    cp $curl/COPYING ppcmc-v$version-$1/licenses/curl.md
+    cp $ffmpeg/LICENSE.md ppcmc-v$version-$1/licenses/ffmpeg.md
+    cp $libffi/LICENSE ppcmc-v$version-$1/licenses/libffi.md
+    cp $libiconv_for_tiger/COPYING ppcmc-v$version-$1/licenses/libiconv.md
+    cp $libpsl/COPYING ppcmc-v$version-$1/licenses/libpsl.md
+    cp $panther_sdl2/COPYING.txt ppcmc-v$version-$1/licenses/panther-sdl2.md
+    cp $python_for_tiger/LICENSE ppcmc-v$version-$1/licenses/python.md
+    cp $youtube_dl/LICENSE ppcmc-v$version-$1/licenses/youtube-dl.md
+    cp $youtube_dlp/LICENSE ppcmc-v$version-$1/licenses/youtube-dlp.md
+    cp $zlib/LICENSE ppcmc-v$version-$1/licenses/zlib.md
+    chmod -R 777 ppcmc-v$version-$1
+    
+    echo "Please right click and create an archive of ppcmc-v$version-$1 for releases to maintain zip compatibility with archive utility"
+}
+
+build_ffmpeg() {
+    cp -R $ffmpeg $tmp
+    # Doesn't use AM_MAINTAINER_MODE.
+    generate_file_and_directory_time_stamps $ffmpeg
+    restore_file_and_directory_time_stamps $ffmpeg
+
+    # LameVMX was forked before pkg-config was added: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=829326 .
+    # We specify --extra-ldflags=-L$app/lib to make sure it is picked up.
+    # Note: we have sdl2-config in our $PATH and pkg-config .pc file so it finds it just fine.
+
+    if [ $1 = "ppc750" ]; then
+        ( cd $tmp/$ffmpeg && ./configure --disable-debug --prefix=$app --disable-altivec --enable-libmp3lame --enable-zlib --enable-openssl --enable-static --enable-sdl --enable-outdev=sdl2 --disable-htmlpages --disable-bzlib --extra-ldflags=-L$app/lib )
+    else
+        ( cd $tmp/$ffmpeg && ./configure --disable-debug --prefix=$app --enable-altivec --enable-libmp3lame --enable-zlib --enable-openssl --enable-static --enable-sdl --enable-outdev=sdl2 --disable-htmlpages --disable-bzlib --extra-ldflags=-L$app/lib )
+    fi
+
+    make -C $tmp/$ffmpeg install DESTDIR=$tmp/ffmpeg_build_$1
+    # This isn't readable/writable by lipo afterwards.
+    chmod -R 777 $tmp/ffmpeg_build_$1
+
+    rm -rf $tmp/$ffmpeg
+}
+
+compile_deps () {
+    # Start with clean slate.
+    if [ $delete_app = "true" ]; then
+        rm -rf $app
+    fi
+    
+    generate_app
+
+    # Update certificates for OpenSSL.
+    mkdir -p $app/certs
+    cp $cert $app/certs/cacert.pem
+    
+    # Update Youtube-dl.
+    mkdir -p $app/bin
+    rm -rf $app/bin/youtube-dl-master
+    cp -R $youtube_dl $app/bin/youtube-dl-master
+
+    # Update YouTube-dlp, only if this is Tiger.
+    if [ $1 = "tiger" ]; then
+        rm -rf $app/bin/yt-dlp-master
+        cp -R $youtube_dlp $app/bin/yt-dlp-master
+    fi
+
+    # Update web interface files.
+    cp -R web-interface $app
+
+    if [ $1 = "panther" ]; then
+        # Can't build with 10.4 SDK @10.3 deployment target or 10.3.9 SDK.
+        build_libffi=false
+        build_python_for_tiger=false
+        build_libiconv_for_tiger=false
+    elif [ $1 = "tiger" ]; then
+        # Set to false from Panther build.
+        build_libffi=true
+        build_python_for_tiger=true
+        build_libiconv_for_tiger=true
+        # We have a better python we can build on Tiger.
+        build_python_for_panther=false
+        # Latest libiconv works fine on Tiger.
+        build_libiconv_for_panther=false
+    fi
+    
+    if [ $1 = "panther" ]; then
+        ./bselect 4.0 10.3.9 ppc 10.3
+    elif [ $1 = "tiger" ]; then
+        ./bselect 4.0 10.4u ppc 10.4
+    fi
+
+    # We need to build with the 10.3.9 SDK to ensure we are not using features first available in 10.4 (used by it's libiconv not present in 10.3.9)
+    if [ $libiconv_for_panther = "true" ]; then
+        echo -e "\nBuilding $libiconv_for_panther..."
+        cp -R $libiconv_for_panther $tmp
+        
+        ( cd $tmp/$libiconv_for_panther && ./configure --prefix=$app --disable-maintainer-mode )
+        make -C $tmp/$libiconv_for_panther install
+        strip -S $app/bin/iconv
+    elif [ $libiconv_for_tiger = "true" ]; then
+        echo -e "\nBuilding $libiconv_for_tiger..."
+        cp -R $libiconv_for_tiger $tmp
+        
+        ( cd $tmp/$libiconv_for_tiger && ./configure --prefix=$app --disable-maintainer-mode )
+        make -C $tmp/$libiconv_for_tiger install
+        # libtool: warning: remember to run 'libtool --finish /Applications/PPCMC.app/lib'. That doesn't work though? We do need a newer lib tool!
+        libtool --finish $app/lib
+        strip -S $app/bin/iconv
+    fi
+
+    # From now on use the 10.4u SDK for Panther @10.3 API level.
+    if [ $1 = "panther" ]; then
+        ./bselect 4.0 10.4u ppc 10.3
+    fi
+
+    if [ $build_panther_sdl2 = "true" ]; then
+        echo -e "\nBuilding $panther_sdl2..."
+        cp -R $panther_sdl2 $tmp
+        # Doesn't have AM_MAINTAINER_MODE.
+        generate_file_and_directory_time_stamps $panther_sdl2
+        restore_file_and_directory_time_stamps $panther_sdl2
+
+        ( cd $tmp/$panther_sdl2 && ./configure --exec-prefix=$app --prefix=$app --without-x --disable-joystick --disable-haptic )
+        make -C $tmp/$panther_sdl2 install
+        rm -r $tmp/$panther_sdl2
+    fi
+
+    if [ $build_lame = "true" ]; then
+        echo -e "\nBuilding $lame..."
+        cp -R $lame $tmp
+
+        # Front-end requires libiconv and links with ncurses 5.4 dylib, no fix yet for ncurses when targeting panther.
+        ( cd $tmp/$lame && ./configure --prefix=$app --exec-prefix=$app --disable-maintainer-mode --disable-frontend )
+        make -C $tmp/$lame install
+        rm -r $tmp/$lame
+    fi
+
+    if [ $build_atomic_parsley = "true" ]; then
+        echo -e "\nBuilding $atomic_parsley..."
+
+        cp -R $atomic_parsley $tmp
+        ( cd $tmp/$atomic_parsley && ./build )
+        cp $tmp/$atomic_parsley/AtomicParsley $app/bin
+        strip -S $app/bin/AtomicParsley
+        rm -r $tmp/$atomic_parsley
+    fi
+    
+    if [ $build_zlib = "true" ]; then
+        echo -e "\nBuilding $zlib..."
+        cp -R $zlib $tmp
+        # Does not use autoconf/automake. Configure is a bash script.
+        
+        ( cd $tmp/$zlib && ./configure --prefix=$app --eprefix=$app )
+        make -C $tmp/$zlib install
+        rm -r $tmp/$zlib
+    fi
+
+    if [ $build_openssl = "true" ]; then
+        echo -e "\nBuilding $openssl..."
+        cp -R $openssl $tmp
+        # MacPorts patch for older Mac OS X versions.
+        cp patch-crypto-rand-tiger.diff $tmp/$openssl
+        # OpenSSL doesn't use autoconf/automake. Configure is a perl script.
+        # OpenSSL doesn't use pkg-config with Configure so we set CFLAGS and LDFLAGS as Configure arguments in order to pick up our new zlib.
+        # We specify zlib-dynamic to ensure Python can also link with the shared zlib referenced from the shared libssl.
+        if [ $1 = "panther" ]; then
+            # Threads require features first available on Mac OS X 10.4 Tiger
+            # Async require features first available on Mac OS X 10.5 Leopard
+            ( cd $tmp/$openssl && patch -p0 < patch-crypto-rand-tiger.diff && ./Configure CFLAGS=-I$app/include LDFLAGS=-L$app/lib enable-shared zlib-dynamic no-async no-threads --openssldir=$app --prefix=$app darwin-ppc-cc )
+        elif [ $1 = "tiger" ]; then
+            # Async require features first available on Mac OS X 10.5 Leopard
+            ( cd $tmp/$openssl && patch -p0 < patch-crypto-rand-tiger.diff && ./Configure CFLAGS=-I$app/include LDFLAGS=-L$app/lib enable-shared zlib-dynamic no-async --openssldir=$app --prefix=$app darwin-ppc-cc )
+        fi
+        
+        make -C $tmp/$openssl install
+        strip -S $app/bin/openssl
+        rm -r $tmp/$openssl
+    fi
+
+    if [ $build_libffi = "true" ]; then
+        echo -e "\nBuilding $libffi..."
+        cp -R $libffi $tmp
+
+        ( cd $tmp/$libffi && ./configure --prefix=$app --disable-maintainer-mode )
+        make -C $tmp/$libffi install
+    fi
+
+    # Requires libffi.
+    if [ $build_python_for_tiger = "true" ]; then
+        echo -e "\nBuilding $python_for_tiger..."
+        cp -R $python_for_tiger $tmp
+
+        # Python doesn't use AM_MAINTAINER_MODE as of Sat May 10 18:44:50 1997 (see ./Modules/_ctypes/libffi/ChangeLog.v1).
+        generate_file_and_directory_time_stamps $python_for_tiger
+        restore_file_and_directory_time_stamps $python_for_tiger
+
+        # MacPorts patches: https://github.com/macports/macports-ports/tree/master/lang/python310/files
+        cp -R \
+        dangling-symlinks.patch \
+        libedit-types.patch \
+        patch-Lib-cgi.py.diff \
+        patch-Lib-ctypes-macholib-dyld.py.diff \
+        patch-configure-xcode4bug.diff \
+        patch-configure.diff \
+        patch-no-copyfile-on-Tiger.diff \
+        patch-setup.py.diff \
+        patch-threadid-older-systems.diff \
+        sysconfig.py.patch \
+        $tmp/$python_for_tiger
+        # We can't enable optimizations because we need llvm-profdata.
+        # MacPorts edits pyconfig.h to fix polling on 10.8 and older.
+        # MacPorts says that pkg-config removes -I flags for paths in CPATH, which confuses python.
+        # Fix up prefix for /Applications/PPCMC.app
+        
+        ( cd $tmp/$python_for_tiger && \
+        patch -p0 < dangling-symlinks.patch && \
+        patch -p0 < libedit-types.patch && \
+        patch -p0 < patch-Lib-cgi.py.diff && \
+        patch -p0 < patch-Lib-ctypes-macholib-dyld.py.diff && \
+        patch -p0 < patch-configure-xcode4bug.diff && \
+        patch -p0 < patch-configure.diff && \
+        patch -p0 < patch-no-copyfile-on-Tiger.diff && \
+        patch -p0 < patch-setup.py.diff && \
+        patch -p0 < patch-threadid-older-systems.diff && \
+        patch -p0 < sysconfig.py.patch && \
+        sed -i '' "s|@@PREFIX@@|/Applications/PPCMC.app|g" Lib/ctypes/macholib/dyld.py && \
+        env PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1 SETUPTOOLS_USE_DISTUTILS=stdlib ./configure --prefix=$app --exec-prefix=$app && \
+        md5 pyconfig.h && \
+        sed -E -i '' 's/.*(HAVE_POLL[_A-Z]*).*/\/\* #undef \1 \*\//g' pyconfig.h && \
+        md5 pyconfig.h )
+        make -C $tmp/$python_for_tiger install
+        strip -S $app/bin/python3.10
+        rm -r $tmp/$python_for_tiger
+    elif [ $build_python_for_panther = "true" ]; then
+        # We can't build Python 3.10.15 targeting Panther because we can't build a threaded OpenSSL which is required.
+        echo -e "\nBuilding $python_for_panther..."
+        cp -R $python_for_panther $tmp
+
+        # Python doesn't use AM_MAINTAINER_MODE as of Sat May 10 18:44:50 1997 (see ./Modules/_ctypes/libffi/ChangeLog.v1).
+        generate_file_and_directory_time_stamps $python_for_panther
+        restore_file_and_directory_time_stamps $python_for_panther
+
+        ( cd $tmp/$python_for_panther && ./configure -prefix=$app --exec-prefix=$app --prefix=$app )
+        make -C $tmp/$python_for_panther install
+        strip -S $app/bin/python3.6
+        rm -r $tmp/$python_for_panther
+    fi
+
+    # Needs libiconv and newer Python.
+    if [ $build_libpsl = "true" ]; then
+        echo -e "\nBuilding $libpsl..."
+        cp -R $libpsl $tmp
+
+        # Doesn't use AM_MAINTAINER_MODE.
+        generate_file_and_directory_time_stamps $libpsl
+        restore_file_and_directory_time_stamps $libpsl
+
+        ( cd $tmp/$libpsl && ./configure --prefix=$app )
+        make -C $tmp/$libpsl install
+        rm -r $tmp/$libpsl
+    fi
+
+    if [ $build_curl = "true" ]; then
+        echo -e "\nBuilding $curl..."
+        cp -R $curl $tmp
+
+        ( cd $tmp/$curl && ./configure --prefix=$app --exec-prefix=$app --with-ssl=$app --with-ca-bundle=$app/certs/cacert.pem --disable-maintainer-mode --disable-debug --enable-optimize --disable-docs )
+        make -C $tmp/$curl install
+        rm -r $tmp/$curl
+    fi
+
+    # FFmpeg needs pretty up to date GNU GAS definitions for altivec optimizations. We use https://github.com/peter-iakovlev/ffmpeg/blob/master/gas-preprocessor.pl, which is an updated version of the original https://github.com/yuvi/gas-preprocessor/blob/master/gas-preprocessor.pl that does work with FFmpeg 4.4.1 (and our current 4.4.5)! ASM lets go.
+    # See https://stackoverflow.com/questions/4293015/compiling-ffmpeg-and-using-gas-preprocessor-on-tiger
+    # The gas-preprocessor.pl was put into the $PATH when we did the intial build dependnecies.
+    if [ $build_ffmpeg = "true" ]; then
+        echo -e "\nBuilding $ffmpeg..."
+        
+        if [ $1 = "panther" ]; then
+            # PowerPC G3.
+            ./bselect 4.0 10.4u ppc750 10.3
+            build_ffmpeg ppc750
+            
+            # PowerPC G4.
+            ./bselect 4.0 10.4u ppc7400 10.3
+            build_ffmpeg ppc7400
+            
+            # PowerPC newer G4.
+            ./bselect 4.0 10.4u ppc7450 10.3
+            build_ffmpeg ppc7450
+        elif [ $1 = "tiger" ]; then
+            # PowerPC G3.
+            ./bselect 4.0 10.4u ppc750 10.4
+            build_ffmpeg ppc750
+            
+            # PowerPC G4.
+            ./bselect 4.0 10.4u ppc7400 10.4
+            build_ffmpeg ppc7400
+
+            # PowerPC newer G4.
+            ./bselect 4.0 10.4u ppc7450 10.4
+            build_ffmpeg ppc7450
+        fi
+
+        # FFmpeg fat binary (arches ppc, ppc750, ppc7400, ppc7450).
+        lipo -create $tmp/ffmpeg_build_ppc7450$app/bin/ffmpeg $tmp/ffmpeg_build_ppc7400$app/bin/ffmpeg $tmp/ffmpeg_build_ppc750$app/bin/ffmpeg -o $app/bin/ffmpeg
+        # FFprobe fat binary (arches ppc, ppc750, ppc7400, ppc7450).
+        lipo -create $tmp/ffmpeg_build_ppc7450$app/bin/ffprobe $tmp/ffmpeg_build_ppc7400$app/bin/ffprobe $tmp/ffmpeg_build_ppc750$app/bin/ffprobe -o $app/bin/ffprobe
+        # FFplay fat binary (arches ppc, ppc750, ppc7400, ppc7450).
+        lipo -create $tmp/ffmpeg_build_ppc7450$app/bin/ffplay $tmp/ffmpeg_build_ppc7400$app/bin/ffplay $tmp/ffmpeg_build_ppc750$app/bin/ffplay -o $app/bin/ffplay
+        
+        rm -r $tmp/ffmpeg_build_ppc*
+    fi
+
+    # Create release directory.
+    rm -rf ppcmc-v$version-$1
+    mkdir ppcmc-v$version-$1
+
+    # Copy PPCMC.app.
+    chmod -R 777 $app
+    cp -R $app ppcmc-v$version-$1
+    generate_release $1
+}
+
+clear
+
+cd "$(dirname "$0")"
+cd "$(pwd -P)"
+this_dir=$(PWD)
+# Use a hardcoded default MAC OS X Tiger path appended to $app/bin + deps/bin.
+# This avoid MacPorts and similar things that have modified the $PATH. 
+# ONLY uses dependencies of PPCMC.app, our build dependencies, and Xcode.
+PATH="/bin:/sbin:/usr/bin:/usr/sbin"
+PATH="$app/bin:$this_dir/deps/bin"${PATH:+:${PATH}}
+
+echo "*******PowerPC Media Center v$version Build System*******"
+
+create_tiger_build=true
+create_panther_build=true
+
+
+if [ "$#" -eq 1 ]; then
+    if [ "$1" = "-a" ]; then
+        generate_app
+        exit 0
+    elif [ "$1" = "-r" ]; then
+        if [ -d "ppcmc-v$version-panther" ]; then
+            generate_release panther
+        fi
+
+        if [ -d "ppcmc-v$version-tiger" ]; then
+            generate_release tiger
+        fi
+        
+        exit 0
+
+    elif [ "$1" = "-c" ]; then
+        rm -rf ppcmc-v$version-panther
+        rm -rf ppcmc-v$version-tiger
+        rm -rf /Applications/PPCMC.app
+        rm -rf deps
+        rm -f .DS_Store
+        echo "Source tree cleansed!"
+        exit 0
+
+    elif [ "$1" = "-p" ]; then
+            echo "Building only for Panther."
+            create_tiger_build=false
+
+    elif [ "$1" = "-t" ]; then
+        echo "Building only for Tiger."
+        create_panther_build=false
+
+    elif [ "$1" = "--help" ]; then
+        echo -e "
+Usage:
+
+build   <optional argument>
+
+build   Build Tiger and Panther releases.
+
+build -a    Only update Apple Script at /Applications/PPCMC.app.
+
+build -r    Only update the releases in the source directory.
+
+build -c    Clean source tree. Deletes all builds, dependencies, and /Applications/PPCMC.app,
+
+build -p    Only build the Panther release for Mac OS X 10.3.9.
+
+build -t    Only build the Tiger release for Mac OS X 10.4.x.
+
+build --help    Display this text.
+
+        "
+        exit 0
+    fi
+fi
+
+if [ $create_panther_build = "true" ] && [ ! -d /Developer/SDKs/MacOSX10.3.9.sdk ]; then
+	echo "Error: Could not find the Mac OS X 10.3.9 SDK at /Developer/SDKs/MacOSX10.3.9.sdk"
+	exit 1
+else
+	echo "Found the Mac OS X 10.3.9 SDK at /Developer/SDKs/MacOSX10.3.9.sdk."
+fi
+
+if [ $create_tiger_build = "true" ] && [ ! -d /Developer/SDKs/MacOSX10.4u.sdk ]; then
+	echo "Error: Could not find the Mac OS X 10.4u SDK at /Developer/SDKs/MacOSX10.4u.sdk."
+	exit 1
+else
+	echo "Found the Mac OS X 10.4u SDK at /Developer/SDKs/MacOSX10.4u.sdk."
+fi
+
+if [ ! -d "$HOME/Library/Preferences/build_select" ]; then
+    echo "Build Select is not currently installed on your mac, but is required. Installing now..."
+    ./bselect -i
+fi
+
+echo -e "Path:\n$PATH\n"
+
+# Compile build dependencies. We need a newer M4, GNU Make, Perl,  GNU libtool, and GNU bash.
+# We check for deps/bin/bash because if that is installed everything else has been for deps as well.
+if [ ! -e deps/bin/bash ]; then
+    ./bselect 4.0 10.4u ppc 10.4
+
+    if [ $delete_app = "true" ]; then
+        rm -rf $app
+    fi
+    
+    if [ -d deps ]; then
+        chmod -R 777 deps
+        rm -rf deps
+    fi
+
+    mkdir -p deps/bin
+    cp $gas_preprocessor deps/bin
+    chmod 777 deps/bin/$gas_preprocessor
+
+    echo "Compiling build dependencies..."
+
+    echo -e "\nBuilding $m4..."
+    cp -R $m4 $tmp
+    # Tiger needs older regnames.
+    cp patch-m4-use-older-regnames-on-tiger.diff $tmp/$m4
+    # Doesn't have AM_MAINTAINER_MODE.
+    generate_file_and_directory_time_stamps $m4
+    restore_file_and_directory_time_stamps $m4
+
+    ( cd $tmp/$m4 && patch -p1 < patch-m4-use-older-regnames-on-tiger.diff && ./configure --prefix=$this_dir/deps )
+    make -C $tmp/$m4 install
+    rm -rf $tmp/$m4
+
+    # Requires M4.
+    echo -e "\nBuilding $libtool..."
+    cp -R $libtool $tmp
+    # Doesn't have AM_MAINTAINER_MODE.
+    generate_file_and_directory_time_stamps $libtool
+    restore_file_and_directory_time_stamps $libtool
+
+    ( cd $tmp/$libtool && ./configure --prefix=$this_dir/deps )
+    make -C $tmp/$libtool install
+    rm -rf $tmp/$libtool
+
+    echo -e "\nBuilding $pkg_config..."
+    cp -R $pkg_config $tmp
+    # Doesn't have AM_MAINTAINER_MODE in the glib subdir (we do in the actual pkg-config dir) so we need to restore the original time stamps.
+    generate_file_and_directory_time_stamps $pkg_config
+    restore_file_and_directory_time_stamps $pkg_config
+
+    ( cd $tmp/$pkg_config && ./configure --prefix=$this_dir/deps --with-pc-path=$app/lib/pkgconfig --with-internal-glib )
+    make -C $tmp/$pkg_config install
+    rm -rf $tmp/$pkg_config
+
+    echo -e "\nBuilding $perl..."
+    cp -R $perl $tmp
+    # Does not use autoconf/automake. Configure is a bash script.
+
+    ( cd $tmp/$perl && ./Configure -des -Dprefix=$this_dir/deps )
+    # generating t/01_test.t - t/01_test.t: Permission denied . Error with release tarball directly from perl...
+    chmod -R 777 $tmp/$perl
+    make -C $tmp/$perl install
+    rm -rf $tmp/$perl
+
+    echo -e "\nBuilding $make..."
+    cp -R $make $tmp
+    # Doesn't have AM_MAINTAINER_MODE.
+    generate_file_and_directory_time_stamps $make
+    restore_file_and_directory_time_stamps $make
+
+    ( cd $tmp/$make && ./configure --prefix=$this_dir/deps )
+    make -C $tmp/$make install
+    rm -rf $tmp/$make
+
+    echo -e "\nBuilding $bash..."
+    cp -R $bash $tmp
+    # Doesn't have AM_MAINTAINER_MODE.
+    generate_file_and_directory_time_stamps $bash
+    restore_file_and_directory_time_stamps $bash
+
+    ( cd $tmp/$bash && ./configure --prefix=$this_dir/deps )
+    make -C $tmp/$bash install
+    rm -rf $tmp/$bash
+
+    # Allow for deletion later, installs as read only.
+    chmod -R 777 deps
+fi
+
+if [ ! -f "stage2" ]; then
+    touch stage2
+    # Recall with non-bugged modern bash!
+    # The ancient bash shipped in Tiger does not pass our $PATH to build_ffmpeg() during a full compile_deps() due to a bug that triggers after hours of the script running.
+    bash ./build "$@"
+    exit 0
+fi
+
+rm stage2
+
+# Display updated build dependencies.
+which pkg-config
+pkg-config --version
+which make
+make --version
+which perl
+perl --version
+libtool --version
+which libtool
+bash --version
+which bash
+
+if [ $create_panther_build = "true" ]; then
+    echo -e "\nGenerating Mac OS X Panther 10.3.9 build..."
+	compile_deps panther
+fi 
+
+if [ $create_tiger_build = "true" ]; then
+    echo -e "\nGenerating Mac OS X Tiger 10.4.x build..."
+    compile_deps tiger
+fi
+
+# Reset compiler to default.
+./bselect 4.0 10.4u ppc 10.4
+
+echo -e "\nBuilding started at "$build_start".\nBuilding ended on $(date)."

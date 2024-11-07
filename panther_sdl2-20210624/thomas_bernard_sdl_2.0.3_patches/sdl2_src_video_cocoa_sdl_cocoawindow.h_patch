@@ -1,0 +1,10 @@
+37a38
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+38a40,42
+> #else
+> @interface Cocoa_WindowListener : NSResponder {
+> #endif
+75a80
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
+76a82
+> #endif

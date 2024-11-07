@@ -1,0 +1,84 @@
+#!/bin/bash
+
+PATH=/Applications/PPCMC.app/bin:$PATH
+export SSL_CERT_FILE=/Applications/PPCMC.app/certs/cacert.pem
+export REQUESTS_CA_BUNDLE=/Applications/PPCMC.app/certs/cacert.pem
+youtube=$(cat /Applications/PPCMC.app/yt-pref)
+echo -e "YouTube downloader command:\n\"$youtube\""
+tmp=$(mktemp -d /var/tmp/ppcmc7w.XXX)
+
+# When this script exits, automatically delete the temp directory.
+cleanup() 
+{ 
+    if [[ -e $tmp ]]; then
+        echo "Clearing temp files..."  
+        rm -r $tmp   
+    fi
+}
+trap cleanup EXIT
+
+if [ "$1" = "conv_240_mpeg" ]; then
+    $python $youtube -f 133+140 -o $tmp/stage1/"%(title)s.%(ext)s" $2
+    basefile=$(ls -1 $tmp/stage1/ | sed -e 's/\.mp4$//')
+    ffmpeg -i "$tmp/stage1/$basefile.mp4" -qscale 0 "$tmp/stage1/$basefile.mpeg" 2>&1
+    cp $tmp/stage1/* /Library/WebServer/Documents/ppcmcw/dl/
+
+elif [ "$1" = "conv_144_mp4" ]; then
+    $python $youtube -f 160+140 -o $tmp/stage2/"%(title)s.%(ext)s" $2
+    basefile=$(ls -1 $tmp/stage2/ | sed -e 's/\.mp4$//')  
+    ffmpeg -i "$tmp/stage2/$basefile.mp4" -qscale 0 -vcodec mpeg4 "$tmp/stage1/$basefile.mp4" 2>&1
+    cp $tmp/stage1/* /Library/WebServer/Documents/ppcmcw/dl/
+
+elif [ "$1" = "conv_240_mp4" ]; then
+    $python $youtube -f 133+140 -o $tmp/stage2/"%(title)s.%(ext)s" $2
+    basefile=$(ls -1 $tmp/stage2/ | sed -e 's/\.mp4$//')  
+    ffmpeg -i "$tmp/stage2/$basefile.mp4" -qscale 0 -vcodec mpeg4 "$tmp/stage1/$basefile.mp4" 2>&1
+    cp $tmp/stage1/* /Library/WebServer/Documents/ppcmcw/dl/
+
+elif [ "$1" = "conv_360_mp4" ]; then
+    $python $youtube -f 134+140 -o $tmp/stage2/"%(title)s.%(ext)s" $2
+    basefile=$(ls -1 $tmp/stage2/ | sed -e 's/\.mp4$//')  
+    ffmpeg -i "$tmp/stage2/$basefile.mp4" -qscale 0 -vcodec mpeg4 "$tmp/stage1/$basefile.mp4" 2>&1
+    cp $tmp/stage1/* /Library/WebServer/Documents/ppcmcw/dl/
+
+elif [ "$1" = "conv_480_mp4" ]; then
+    $python $youtube -f 133+140 -o $tmp/stage2/"%(title)s.%(ext)s" $2
+    basefile=$(ls -1 $tmp/stage2/ | sed -e 's/\.mp4$//')  
+    ffmpeg -i "$tmp/stage2/$basefile.mp4" -qscale 0 -vcodec mpeg4 "$tmp/stage1/$basefile.mp4" 2>&1
+    cp $tmp/stage1/* /Library/WebServer/Documents/ppcmcw/dl/
+
+elif [ "$1" = "conv_mp3" ]; then
+    $python $youtube -f 140 -o $tmp/stage2/"%(title)s.%(ext)s" $2
+    basefile=$(ls -1 $tmp/stage2/ | sed -e 's/\.m4a$//')  
+    ffmpeg -i "$tmp/stage2/$basefile.m4a" -f mp3 -ar 44100 -ab 320000 -vn -y "$tmp/stage1/$basefile.mp3" 2>&1
+    cp $tmp/stage1/* /Library/WebServer/Documents/ppcmcw/dl/
+
+elif [ "$1" = "360p_mp4_h264" ]; then
+    $python $youtube -f 18 -o /Library/WebServer/Documents/ppcmcw/dl/"%(title)s.%(ext)s" $2
+
+elif [ "$1" = "720p_mp4_h264" ]; then
+    $python $youtube -f 136+140 -o /Library/WebServer/Documents/ppcmcw/dl/"%(title)s.%(ext)s" $2
+
+elif [ "$1" = "update" ]; then
+
+    if [ "$youtube" = "python3.10 /Applications/PPCMC.app/bin/yt-dlp-master/yt_dlp/__main__.py --prefer-ffmpeg --ffmpeg-location=/Applications/PPCMC.app/bin/ffmpeg" ]; then
+        # BSD CP shenanigans: -Rf 
+        rm -Rf /Applications/PPCMC.app/bin/yt-dlp-master
+        echo Downloading...
+        curl -L -o /Applications/PPCMC.app/bin/yt-dlp-master.zip https://github.com/yt-dlp/yt-dlp/archive/refs/heads/master.zip
+        echo Extracting...
+        unzip -q /Applications/PPCMC.app/bin/yt-dlp-master.zip -d /Applications/PPCMC.app/bin
+        rm /Applications/PPCMC.app/bin/yt-dlp-master.zip
+    else
+        # BSD CP shenanigans: -Rf 
+        rm -Rf /Applications/PPCMC.app/bin/youtube-dl-master
+        echo Downloading...
+        curl -L -o /Applications/PPCMC.app/bin/youtube-dl-master.zip https://github.com/ytdl-org/youtube-dl/archive/refs/heads/master.zip
+        echo Extracting...
+        unzip -q /Applications/PPCMC.app/bin/youtube-dl-master.zip -d /Applications/PPCMC.app/bin
+        rm /Applications/PPCMC.app/bin/youtube-dl-master.zip
+    fi
+
+    echo Done!
+
+fi

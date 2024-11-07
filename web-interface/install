@@ -1,0 +1,20 @@
+#!/bin/bash
+app=/Applications/PPCMC.app
+wdir=/Library/WebServer/Documents/ppcmcw/
+cd $app/web-interface
+echo "Web Interface Version 0.7 Installer"
+mkdir -p $wdir/dl
+rm -f ~/Desktop/ppcmcw-dl
+ln -s $wdir/dl ~/Desktop/ppcmcw-dl
+mkdir -p $wdir/bin
+cp *.php $wdir
+cp wcli $wdir/bin/
+chmod -R 777 $wdir
+
+if [ -f "/etc/httpd/httpd.conf" ]; then
+    patch /etc/httpd/httpd.conf add_php_4_patch > /dev/null 2>&1
+elif [ -f "/etc/apache2/httpd.conf" ];  then
+    patch /etc/apache2/httpd.conf add_php_5_patch  > /dev/null 2>&1
+fi
+
+echo "Complete. Personal Web Sharing must be turned on in System Preferences to access the web interface."

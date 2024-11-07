@@ -1,0 +1,14 @@
+#!/bin/sh
+app=/Applications/PPCMC.app
+cd $app/web-interface
+echo "Web Interface Version 0.7 Uninstaller"
+rm -rf /Library/WebServer/Documents/ppcmcw
+rm -f ~/Desktop/ppcmcw-dl
+
+if [ -f "/etc/httpd/httpd.conf" ]; then
+    patch /etc/httpd/httpd.conf remove_php_4_patch > /dev/null 2>&1
+elif [ -f "/etc/apache2/httpd.conf" ]; then
+    patch /etc/apache2/httpd.conf remove_php_5_patch > /dev/null 2>&1
+fi
+
+echo "Complete. Turn of Personal Web Sharing if you no longer need it for anything else."

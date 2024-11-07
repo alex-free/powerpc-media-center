@@ -1,0 +1,17 @@
+#!/bin/sh
+
+echo "eXtract Tar Ball (XTB)"
+
+for f in *.*gz; do
+    if [[ -f "$f" ]]; then
+        tar zxvf "$f"
+        rm "$f"
+    fi
+done
+
+for f in *.*bz2; do
+    if [[ -f "$f" ]]; then
+        tar jxvf "$f"
+        rm "$f"
+    fi
+done

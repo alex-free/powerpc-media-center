@@ -1,0 +1,8 @@
+32a33
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+35a37
+> #endif
+36a39
+> #if MAC_OS_X_VERSION_MIN_REQUIRED >= 1060
+37a41
+> #endif

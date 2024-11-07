@@ -1,0 +1,16 @@
+22d21
+< 
+31d29
+< 
+36c34
+< #if SDL_ATOMIC_DISABLED
+---
+> #if SDL_ATOMIC_DISABLED || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_4
+85c83
+< #elif defined(__MACOSX__) || defined(__IPHONEOS__)
+---
+> #elif MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_4 || defined(__IPHONEOS__)
+88c86
+< 
+---
+> 	
