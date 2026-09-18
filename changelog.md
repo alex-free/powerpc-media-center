@@ -2,6 +2,7 @@
 
 ## Table Of Contents
 
+  * [Version 7.2.7 (11/7/2024)](#version-727-1172024)
   * [Version 7.2.6 (12/11/2021)](#version-726-12112021)
   * [Version 7.2.5 (6/1/2021)](#version-725-612021)
   * [Version 7.2.4 (5/26/2021)](#version-724-5262021)
@@ -28,6 +29,74 @@
   * [Version 7.0.2 (2/28/2020)](#version-702-2282020)
   * [Version 7.0.1 (2/26/2020)](#version-701-2262020)
   * [Version 7.0 (2/25/2020)](#version-70-2252020)
+
+### Version 7.2.7 (11/7/2024)
+
+Changes:
+
+* Can choose from YouTube-dl or YouTube-dlp when setting your preferences on Tiger and Leopard. For Panther only YouTube-dl is available and you are not prompted for this selection. YouTube-dlp is currently more advanced then YouTube-dl and can download many more different formats and resolutions then the original YouTube-dl can.
+
+* Updates either YouTube-dl or YouTube-dlp with cURL pointed to the latest commit. Get the fastest fixes and improvements as they are committed to the source tree, before any release is even put out with said changes.
+
+* Updated the included YouTube-dl and YouTube-dlp in the app to the latest commits.
+
+* Removed git, cdrdao, and CD burning features. 
+
+* Smaller app size due to implementing executable stripping of debug symbols (or configuration for building without them when possible).
+
+* Updated python to version 3.10.15 for the Tiger build.
+
+* Updated python to version 3.6.15 for the Panther build.
+
+* Updated OpenSSL to version 1.1.1w.
+
+* Updated SSL certificates to the latest 9/24/2024 extraction.
+
+* Updated cURL to the latest version, 8.10.1.
+
+* Updated FFmpeg/FFplay/FFprobe to version 4.4.5.
+
+* Added the latest version of LibPSL, 0.21.5. Used by cURL.
+
+* Added the latest version of libiconv, 1.17 for the Tiger build.
+
+* Added libiconv version 1.11.1 for the Panther build.
+
+* Added the latest version of libFFI, v3.4.5 for the Tiger build.
+
+* Updated Zlib to the latest version, 1.3.1.
+
+* Fixed multiple GUI bugs that did not have a default selection highlighted.
+
+* Cleaned up and simplified apple script code.
+
+* Better default options selected in GUI menus.
+
+* FFplay now detaches from PPCMC.app for local media file playback.
+
+* Simplified YouTube streaming options to not ask for a resolution, since only 360p is possible to stream. Other resolutions can be downloaded still. 
+
+* Improved FFplay args. `-fast` is now used. `-autoexit` is also used to close the player when playback is complete automatically.
+
+* Improved local file name handling for playing media files. Many more local video files will now open correctly with i.e. FFplay.
+
+* Fixed web interface to work with Python 3.6.15 (Panther) and Python 3.10.15 (Tiger).
+
+* Web interface now offers 360p H.264 MP4 and 720p H.264 MP4 options. Great for ancient iOS devices.
+
+* Improved web interface installer/uninstaller and wcli.
+
+* Web interface now supports multiple concurrent connections at one time.
+
+* Rewritten build system.
+
+* Build system no longer requires sudo or root privileges at all.
+
+* Build system now works even if MacPorts is installed (MacPorts is neither required or used by the PPCMC 7 custom build system).
+
+* Enabled all arches in LameVMX.
+
+* Documentation rewritten in markdown.
 
 ## Version 7.2.6 (12/11/2021)
 
